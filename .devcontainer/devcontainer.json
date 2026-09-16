@@ -4,6 +4,11 @@
     "dockerfile": "Containerfile",
     "context": ".",
   },
+
+  "mounts": [
+    "type=bind,src=${localEnv:SSH_AUTH_SOCK},dst=/.ssh-agent.sock,consistency=cached"
+  ],
+
   "forwardPorts": [8000],
   "portsAttributes": {
     "8000": {
