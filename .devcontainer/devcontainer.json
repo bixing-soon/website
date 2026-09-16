@@ -6,7 +6,7 @@
   },
 
   "mounts": [
-    "type=bind,src=${localEnv:SSH_AUTH_SOCK},dst=/.ssh-agent.sock,consistency=cached"
+    "type=bind,source=${localEnv:SSH_AUTH_SOCK},target=/.ssh-agent.sock,consistency=cached"
   ],
 
   "forwardPorts": [8000],
