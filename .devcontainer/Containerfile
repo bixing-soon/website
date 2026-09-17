@@ -1,3 +1,3 @@
 FROM quay.io/fedora/fedora:44
-RUN dnf install -y nodejs npm git git-filter-repo vim python3 openssh
+RUN dnf install -y nodejs npm git git-filter-repo vim python3 openssh procps-ng
 ENV SSH_AUTH_SOCK="/.ssh-agent.sock"
