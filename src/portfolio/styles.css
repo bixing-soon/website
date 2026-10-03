@@ -79,7 +79,7 @@ body::after {
   z-index: -1;
   pointer-events: none;
   opacity: 0.03;
-  background: url("logo.svg") no-repeat center / contain;
+  background: url("https://img.bixing.me/mascot.png") no-repeat center / contain;
 }
 
 h1,
@@ -248,6 +248,12 @@ a {
   color: var(--accent);
 }
 
+.hero-welcome {
+  margin: -0.35rem 0 1.1rem;
+  max-width: 44ch;
+  color: var(--muted);
+}
+
 .lede {
   max-width: 44ch;
   margin-bottom: 1.7rem;
@@ -265,6 +271,12 @@ a {
   margin: -0.35rem 0 1.9rem;
   color: var(--muted);
   text-wrap: balance;
+}
+
+.links-note {
+  margin: 1.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .split {

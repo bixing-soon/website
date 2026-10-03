@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="碧星">
+  <defs>
+    <linearGradient id="star" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbdce8"/>
+      <stop offset="100%" stop-color="#f2b8cd"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#1b181f"/>
+  <path d="M32 13 C34 26 39 31 52 33 C39 35 34 40 32 53 C30 40 25 35 12 33 C25 31 30 26 32 13 Z" fill="url(#star)"/>
+  <path d="M50 9 C50.6 12.9 52.1 14.4 56 15 C52.1 15.6 50.6 17.1 50 21 C49.4 17.1 47.9 15.6 44 15 C47.9 14.4 49.4 12.9 50 9 Z" fill="#f2b8cd"/>
+</svg>

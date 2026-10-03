@@ -1,8 +1,8 @@
-# Personal Portfolio Website
+# bixing.me
 
-A static, single-page portfolio site built with plain HTML and CSS.
+FYI, the main site is at the root of `/src` and my portfolio one level down in `/src/portfolio`.
 
-## How development works
+## Development
 
 Everything runs inside a dev container, so you don't need any dev-tooling installed on your machine.
 Open the project folder in the container (your IDE will pick up `.devcontainer/`) and work from there.
@@ -17,26 +17,30 @@ This means git over SSH with your host's SSH agent. This allows you to work insi
 ### Port 8000
 
 Port 8000 is forwarded to your host and opens in your browser automatically.
-That is the port the local server below listens on.
+That is the port the local servers below listen on.
 
 ## Structure
 
 ```
-src/                 site files (served as-is)
-  index.html         the page
-  styles.css         all styling
-  favicon.svg        browser tab icon
-  logo.svg           background watermark
+src/                 server root
+  portfolio/         the portfolio site, served at /portfolio
+    index.html       the page
+    styles.css       all styling
+    favicon.svg      browser tab icon
 scripts/
-  http-test.sh       start a local HTTP server on port 8000
+  test-main.sh       serve the whole site from src/ on port 8000
+  test-portfolio.sh  serve only the portfolio on port 8000
   setup-git.sh       set git name, email, and default branch
 .devcontainer/       dev environment (Fedora + Node, Python, git)
 ```
 
+The background watermark is not part of the repo; it is served from R2 at
+<https://img.bixing.me/mascot.png>.
+
 ## Editing
 
-Edit the files in `src/` directly and refresh the browser. `index.html` holds the
-content; `styles.css` holds the styling and theme colors.
+Edit the files under `src/` directly and refresh the browser. `index.html` holds the content;
+`styles.css` holds the styling and theme colors.
 
 ## Running locally
 
@@ -44,7 +48,8 @@ content; `styles.css` holds the styling and theme colors.
 ./scripts/http-test.sh
 ```
 
-Then open <http://localhost:8000>. The script serves `src/` on port 8000 with `python3 -m http.server` and kills any server already running there first.
+Then open <http://localhost:8000/> or <http://localhost:8000/portfolio/>. The script serves `src/` on port 8000 with
+`python3 -m http.server` and kills any server already running there first.
 
 ## First-time git setup
 
@@ -56,4 +61,5 @@ Sets the git name, email, and default branch inside the container.
 
 ## Deploying
 
-The site is deployed to Cloudflare Workers from `src/`.
+Deployed to Cloudflare Workers from `src/`, served at <https://bixing.me>, with the portfolio at
+<https://bixing.me/portfolio>.
