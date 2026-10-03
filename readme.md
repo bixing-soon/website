@@ -56,4 +56,4 @@ Sets the git name, email, and default branch inside the container.
 
 ## Deploying
 
-The site is deployed to Azure Static Web Apps from `src/`.
+The site is deployed to Cloudflare Workers from `src/`.
