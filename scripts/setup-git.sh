@@ -1,3 +1,5 @@
+#!/bin/bash
+
 NAME="bixing-soon"
 EMAIL="319032326+bixing-soon@users.noreply.github.com"
 DIR="/workspaces/website"

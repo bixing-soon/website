@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -e
 pkill -f "http server 8000" || true
 echo "Starting HTTP server on port 8000."
