@@ -21,13 +21,23 @@ resource "cloudflare_worker_version" "web-version" {
     type = "r2_bucket"
     name = "bucket-bind"
     bucket_name = cloudflare_r2_bucket.web-bucket.name
+  },
+  {
+    type = "assets"
+    name = "assets-bind"
   }]
   assets = {
-    directory = "$(path.module)/../src"
+    directory = "${path.module}/../src"
     config = {
       not_found_handling = "404-page"
     }
   }
+  main_module = "worker"
+  modules = [{
+    name = "worker"
+    content_type = "application/javascript"
+    content_file = "${path.module}/worker.js"
+  }]
 }
 
 resource "cloudflare_worker_deployment" "web-deploy" {

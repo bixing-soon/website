@@ -79,7 +79,7 @@ body::after {
   z-index: -1;
   pointer-events: none;
   opacity: 0.03;
-  background: url("https://img.bixing.me/mascot.png") no-repeat center / contain;
+  background: url("/images/mascot.png") no-repeat center / contain;
 }
 
 h1,

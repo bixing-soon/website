@@ -1,2 +1,7 @@
 age-key.txt
 *.age
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+node_modules/

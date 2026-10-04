@@ -1,5 +1,5 @@
 FROM quay.io/fedora/fedora:44
 RUN dnf install -y nodejs npm git git-filter-repo dnf-plugins-core vim python3-pip age openssh procps-ng
-RUN dnf config-managed addrepo --from-repofile=https://rpm.releases.hashicorp.com/fedora/hashicorp.repo && \
+RUN dnf config-manager addrepo --from-repofile=https://rpm.releases.hashicorp.com/fedora/hashicorp.repo && \
     dnf install -y terraform
-    ENV SSH_AUTH_SOCK="/.ssh-agent.sock"
+ENV SSH_AUTH_SOCK="/.ssh-agent.sock"
