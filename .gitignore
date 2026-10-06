@@ -4,4 +4,7 @@ age-key.txt
 *.tfstate
 *.tfstate.*
 *.tfvars
+__pycache__/
+*.pyc
 node_modules/
+.Trash-0/

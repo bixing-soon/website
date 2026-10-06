@@ -32,11 +32,12 @@ resource "cloudflare_worker_version" "web-version" {
       not_found_handling = "404-page"
     }
   }
+  compatibility_date = "2026-08-04"
   main_module = "worker"
   modules = [{
     name = "worker"
-    content_type = "application/javascript"
-    content_file = "${path.module}/worker.js"
+    content_type = "text/x-python"
+    content_file = "${path.module}/worker.py"
   }]
 }
 

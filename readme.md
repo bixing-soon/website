@@ -1,13 +1,17 @@
 # bixing.me
 
-FYI, the main site is at the root of `/src` and my portfolio one level down in `/src/portfolio`.
+A small static site with a Cloudflare Worker in front of it. The site itself is plain HTML/CSS
+under `src/`; the Worker serves those files and streams images out of a private R2 bucket. The
+infrastructure is managed with Terraform.
+
+FYI, the main site is at the root of `/src` and the portfolio one level down in `/src/portfolio`.
 
 ## Development
 
 Everything runs inside a dev container, so you don't need any dev-tooling installed on your machine.
 Open the project folder in the container (your IDE will pick up `.devcontainer/`) and work from there.
 
-The container is Fedora with Node, Python 3, git, vim, and openssh. All the commands below are meant to run inside it.
+The container is Fedora with Node, Python 3, Terraform, git, vim, and openssh. All the commands below are meant to run inside it.
 
 ### SSH agent
 
@@ -17,30 +21,7 @@ This means git over SSH with your host's SSH agent. This allows you to work insi
 ### Port 8000
 
 Port 8000 is forwarded to your host and opens in your browser automatically.
-That is the port the local servers below listen on.
-
-## Structure
-
-```
-src/                 server root
-  portfolio/         the portfolio site, served at /portfolio
-    index.html       the page
-    styles.css       all styling
-    favicon.svg      browser tab icon
-scripts/
-  test-main.sh       serve the whole site from src/ on port 8000
-  test-portfolio.sh  serve only the portfolio on port 8000
-  setup-git.sh       set git name, email, and default branch
-.devcontainer/       dev environment (Fedora + Node, Python, git)
-```
-
-The background watermark is not part of the repo; it is served from R2 at
-<https://img.bixing.me/mascot.png>.
-
-## Editing
-
-Edit the files under `src/` directly and refresh the browser. `index.html` holds the content;
-`styles.css` holds the styling and theme colors.
+That is the port the local server below listens on.
 
 ## Running locally
 
@@ -59,7 +40,18 @@ Then open <http://localhost:8000/> or <http://localhost:8000/portfolio/>. The sc
 
 Sets the git name, email, and default branch inside the container.
 
-## Deploying
+## Credentials
 
-Deployed to Cloudflare Workers from `src/`, served at <https://bixing.me>, with the portfolio at
-<https://bixing.me/portfolio>.
+To deploy, you need the Cloudflare API token, the account and zone IDs, and S3 keys for R2.
+They are stored encrypted in `infra/creds.age` and decrypted into your current shell by:
+
+```sh
+source scripts/load-creds.sh
+```
+
+It must be **sourced**, not executed; if you run it as a command, it would put the variables in a child process.
+It decrypts with `age-key.txt`, which is not in this repository.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
