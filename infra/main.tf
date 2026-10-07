@@ -32,7 +32,7 @@ resource "cloudflare_worker_version" "web-version" {
     }
   }
   compatibility_date = "2026-08-04"
-  compatibility_flags = ["python_workers"]
+  compatibility_flags = ["python_workers", "disable_python_external_sdk"]
   main_module = "worker.py"
   modules = [{
     name = "worker.py"
