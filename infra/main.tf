@@ -6,7 +6,7 @@ resource "cloudflare_worker" "web-worker" {
   }
 }
 
-resource "cloudflare_worker_custom_domain" "web-domain" {
+resource "cloudflare_workers_custom_domain" "web-domain" {
   for_each = var.domains
   account_id = var.account_id
   hostname = each.value
@@ -41,14 +41,14 @@ resource "cloudflare_worker_version" "web-version" {
   }]
 }
 
-resource "cloudflare_worker_deployment" "web-deploy" {
+resource "cloudflare_workers_deployment" "web-deploy" {
   account_id = var.account_id
-  script_name = "website"
-  strategy = "percentage"
-  version = [{
+  versions = [{
     version_id = cloudflare_worker_version.web-version.id
     percentage = 100
   }]
+  script_name = "website"
+  strategy = "percentage"
 }
 
 # STORAGE:
