@@ -1,3 +1,9 @@
+variable "cf_api_token" {
+  type = string
+  description = "Cloudflare API token."
+  sensitive = true
+}
+
 variable "account_id" {
   type = string
   description = "Cloudflare account ID."

@@ -3,10 +3,17 @@ on:
     branches:
       - main
 
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
 env:
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+  TF_VAR_cf_api_token: ${{ secrets.CF_API_TOKEN }}
   TF_VAR_account_id: ${{ secrets.ACCOUNT_ID }}
   TF_VAR_zone_id: ${{ secrets.ZONE_ID }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  # R2_BUCKET_NAME secret
 
 jobs:
   setup-terraform:
@@ -17,11 +24,17 @@ jobs:
        - name: setup terraform
          uses: hashicorp/setup-terraform@v4
        - name: initialize terraform
-         run: terraform init
+         run: |
+          terraform init -input=false \
+            -backend-config="endpoints={s3=\"https://${{ secrets.ACCOUNT_ID }}.r2.cloudflarestorage.com\"}" \
+            -backend-config="bucket=${{ secrets.R2_BUCKET_NAME }}"
+         working-directory: ./infra
+       - name: validate
+         run: terraform validate
          working-directory: ./infra
        - name: plan
-         run: terraform plan
+         run: terraform plan -input=false -out=tfplan
          working-directory: ./infra
        - name: apply
-         run: terraform apply -auto-approve
+         run: terraform apply -input=false tfplan
          working-directory: ./infra

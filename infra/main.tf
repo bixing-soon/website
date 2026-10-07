@@ -33,9 +33,9 @@ resource "cloudflare_worker_version" "web-version" {
   }
   compatibility_date = "2026-08-04"
   compatibility_flags = ["python_workers"]
-  main_module = "worker"
+  main_module = "worker.py"
   modules = [{
-    name = "worker"
+    name = "worker.py"
     content_type = "text/x-python"
     content_file = "${path.module}/worker.py"
   }]
@@ -57,4 +57,5 @@ resource "cloudflare_workers_custom_domain" "web-domain" {
   hostname = each.value
   zone_id = var.zone_id
   service = "website"
+  depends_on = [cloudflare_workers_deployment.web-deploy]
 }
