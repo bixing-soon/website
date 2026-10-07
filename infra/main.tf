@@ -6,12 +6,11 @@ resource "cloudflare_worker" "web-worker" {
   }
 }
 
-resource "cloudflare_workers_custom_domain" "web-domain" {
-  for_each = var.domains
+resource "cloudflare_r2_bucket" "web-bucket" {
   account_id = var.account_id
-  hostname = each.value
-  zone_id = var.zone_id
-  service = "website"
+  name = "web-bucket"
+  location = "oc"
+  storage_class = "Standard"
 }
 
 resource "cloudflare_worker_version" "web-version" {
@@ -33,6 +32,7 @@ resource "cloudflare_worker_version" "web-version" {
     }
   }
   compatibility_date = "2026-08-04"
+  compatibility_flags = ["python_workers"]
   main_module = "worker"
   modules = [{
     name = "worker"
@@ -51,11 +51,10 @@ resource "cloudflare_workers_deployment" "web-deploy" {
   strategy = "percentage"
 }
 
-# STORAGE:
-
-resource "cloudflare_r2_bucket" "web-bucket" {
+resource "cloudflare_workers_custom_domain" "web-domain" {
+  for_each = var.domains
   account_id = var.account_id
-  name = "web-bucket"
-  location = "oc"
-  storage_class = "Standard"
+  hostname = each.value
+  zone_id = var.zone_id
+  service = "website"
 }
