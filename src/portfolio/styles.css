@@ -378,6 +378,11 @@ a {
   transform: translateY(-3px);
 }
 
+.card-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
 .card p {
   color: var(--muted);
   font-size: 0.94rem;
