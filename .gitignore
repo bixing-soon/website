@@ -4,8 +4,14 @@ age-key.txt
 *.tfstate
 *.tfstate.*
 *.tfvars
+tfplan
 .terraform.lock.hcl
 __pycache__/
 *.pyc
 node_modules/
 .Trash-0/
+.cloudflare/
+*.png
+*.jpg
+*.gif
+images/

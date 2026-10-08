@@ -6,7 +6,7 @@ from pyodide.ffi import to_js
 from workers import Response, WorkerEntrypoint
 
 PREFIX = "/images/"
-CACHE_CONTROL = "public, max-age=31536000, immutable"  # 1 year
+CACHE_CONTROL = "public, max-age=86400, stale-while-revalidate=604800"  # 1 day fresh, serve stale for a week
 
 
 def js_object(values):
@@ -50,8 +50,22 @@ class Default(WorkerEntrypoint):
         key = unquote(path[len(PREFIX):])
         bucket = getattr(self.env, "bucket-bind")
 
+        # Build an explicit R2Range from the client's Range header. Handing R2
+        # the Headers object itself as `range` was misread by the binding (it
+        # returned length ~= header count), truncating the image.
+        range_header = request.headers.get("range")
+        range_opt = None
+        if range_header and range_header.startswith("bytes="):
+            start_s, _, end_s = range_header[len("bytes="):].partition("-")
+            if start_s.isdigit() and end_s.isdigit() and int(end_s) >= int(start_s):
+                start = int(start_s)
+                range_opt = js_object({"offset": start, "length": int(end_s) - start + 1})
+
         try:
-            obj = await bucket.get(key, onlyIf=request.headers, range=request.headers)
+            if range_opt is not None:
+                obj = await bucket.get(key, onlyIf=request.headers, range=range_opt)
+            else:
+                obj = await bucket.get(key, onlyIf=request.headers)
         except Exception:
             return Response("Storage error", status=500)
 
@@ -74,11 +88,12 @@ class Default(WorkerEntrypoint):
             status = 304 if request.headers.has("if-none-match") else 412
             return Response(None, status=status, headers=headers)
 
-        # if R2 honoured range, object carries offset/length & the must be 206 with a Content-Range header
+        # R2 hands back a `range` even for a full read, so only treat the reply
+        # as a real partial when we actually asked R2 for one.
         rng = getattr(obj, "range", None)
         offset = getattr(rng, "offset", None) if rng is not None else None
         length = getattr(rng, "length", None) if rng is not None else None
-        ranged = offset is not None and length is not None
+        ranged = range_opt is not None and offset is not None and length is not None
 
         if ranged:
             headers["content-range"] = f"bytes {offset}-{offset + length - 1}/{obj.size}"

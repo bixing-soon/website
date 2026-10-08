@@ -16,6 +16,7 @@ env:
   TF_VAR_zone_id: ${{ secrets.ZONE_ID }}
   AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  # R2_S3_API_ENDPOINT secret
   # R2_BUCKET_NAME secret
 
 jobs:
@@ -29,7 +30,7 @@ jobs:
        - name: initialize terraform
          run: |
           terraform init -input=false \
-            -backend-config="endpoints={s3=\"https://${{ secrets.ACCOUNT_ID }}.r2.cloudflarestorage.com\"}" \
+            -backend-config="endpoints={s3=\"${{ secrets.R2_S3_API_ENDPOINT }}\"}" \
             -backend-config="bucket=${{ secrets.R2_BUCKET_NAME }}"
          working-directory: ./infra
        - name: validate
