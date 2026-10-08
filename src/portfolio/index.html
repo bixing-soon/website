@@ -51,12 +51,12 @@
       <div class="split">
         <div class="prose">
           <p>I manage my cluster, servers, and network as Infrastructure as Code. It all lives in Git, so changes are commits instead of manual edits.</p>
-          <p>I write shell scripts and YAML to automate deployments, backups, and maintenance.</p>
+          <p>I write shell scripts, YAML, and Terraform to automate deployments, backups, and maintenance.</p>
         </div>
         <dl class="facts">
           <div><dt>Based in</dt><dd>Sydney, Australia</dd></div>
           <div><dt>Studying</dt><dd>UNSW College</dd></div>
-          <div><dt>Email</dt><dd><a href="mailto:contact@bixing.me">contact@bixing.me</a></dd></div>
+          <div><dt>Email</dt><dd><a href="mailto:denzel.suprapto@bixing.me">denzel.suprapto@bixing.me</a></dd></div>
         </dl>
       </div>
     </div>
@@ -88,6 +88,7 @@
             <li class="tag">Shell scripting</li>
             <li class="tag">YAML</li>
             <li class="tag">Ansible</li>
+            <li class="tag">Terraform</li>
             <li class="tag">Python</li>
             <li class="tag">Golang</li>
           </ul>
@@ -120,9 +121,11 @@
         </article>
         <article class="card">
           <h3>Web Hosting</h3>
-          <p>This site runs on Cloudflare Workers at a domain I registered. Services on my servers are published through Cloudflare Tunnels on that same domain, so nothing has to be exposed directly.</p>
+          <p>This site runs on Cloudflare Workers at a domain I registered, and the infrastructure behind it is managed with Terraform. Services on my servers are published through Cloudflare Tunnels on that same domain, so nothing has to be exposed directly.</p>
+          <p class="card-source"><a href="https://github.com/bi-xing/website" target="_blank" rel="noopener noreferrer">Source Code</a></p>
           <ul class="tags">
             <li class="tag">Cloudflare</li>
+            <li class="tag">Terraform</li>
             <li class="tag">Web Hosting</li>
           </ul>
         </article>
@@ -137,7 +140,7 @@
         </article>
         <article class="card">
           <h3>Email and SMTP</h3>
-          <p>I set up custom email aliases on my own domain and configured Azure Communication Services as the outgoing mail server, so the apps I run can send mail through it.</p>
+          <p>I set up custom email aliases on my own domain and configured Azure Communication Services as the outgoing mail server, so the apps I run can send mail through it (ongoing migration to Amazon SES).</p>
           <ul class="tags">
             <li class="tag">Azure</li>
             <li class="tag">SMTP</li>
@@ -168,7 +171,7 @@
     <div class="container">
       <p class="eyebrow">Contact</p>
       <h2>Links</h2>
-      <p class="section-note">Infrastructure is where I&rsquo;m strongest. I&rsquo;m flexible about the role.</p>
+      <p class="section-note">Where to find my work and how to get in touch.</p>
       <ul class="contact-list">
         <li>
           <a class="contact-card" href="https://github.com/bi-xing" target="_blank" rel="noopener noreferrer">
@@ -196,14 +199,14 @@
         </li>
 
         <li>
-          <a class="contact-card" href="mailto:contact@bixing.me">
+          <a class="contact-card" href="mailto:denzel.suprapto@bixing.me">
             <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
               <rect x="2.5" y="4.5" width="19" height="15" rx="2.5"></rect>
               <path d="m3.2 6.5 8.8 6.4 8.8-6.4"></path>
             </svg>
             <span class="contact-body">
               <span class="contact-label">Email</span>
-              <span class="contact-handle">contact@bixing.me</span>
+              <span class="contact-handle">denzel.suprapto@bixing.me</span>
             </span>
           </a>
         </li>
@@ -216,11 +219,6 @@
 <footer class="site-footer">
   <div class="container footer-inner">
     <p class="footer-note"><svg class="copyleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M8.85 7.5A5.5 5.5 0 1 1 8.85 16.5"></path></svg> 2026 Denzel Hugo Suprapto</p>
-    <ul class="footer-links">
-      <li><a href="https://github.com/bi-xing" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-      <li><a href="https://www.linkedin.com/in/denzel-s-09708a3b6/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
-      <li><a href="mailto:contact@bixing.me">Email</a></li>
-    </ul>
   </div>
 </footer>
 </body>
