@@ -52,6 +52,13 @@ source scripts/load-creds.sh
 It must be **sourced**, not executed; if you run it as a command, it would put the variables in a child process.
 It decrypts with `age-key.txt`, which is not in this repository.
 
+## Terraform state
+
+The state for `infra/` is kept in R2 rather than on disk. `infra/state.tf` only declares the key
+(`website.tfstate`); the bucket and the S3 endpoint are passed when initializing Terraform.
+
+So load the credentials and run `terraform init` before `plan` or `apply`.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
