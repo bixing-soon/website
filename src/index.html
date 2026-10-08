@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>碧星</title>
+<meta name="description" content="Linux, servers, and assorted anime moments. My corner of the internet.">
+<meta name="theme-color" content="#fff7fb">
+<meta name="color-scheme" content="light">
+<script>
+// Decide before first paint whether the 3D scene is coming, so the plain
+// sections never flash on screen first. main.js removes this class once the
+// scene is up (or hands the sections back if 3D can't run).
+(function () {
+  try {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var c = document.createElement('canvas');
+    var gl = !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+    if (gl && !reduce) {
+      document.documentElement.classList.add('pending3d');
+      // safety: if the 3D bundle never arrives, reveal the plain content
+      window.setTimeout(function () {
+        document.documentElement.classList.remove('pending3d');
+      }, 5000);
+    }
+  } catch (e) { /* no WebGL: just show the plain content */ }
+})();
+</script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="no-js">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="boot" aria-hidden="true">
+  <img class="boot-gif" src="/images/sakiko-sip.gif" alt="">
+  <p class="boot-name">碧星</p>
+  <div class="boot-bar"><span></span></div>
+</div>
+
+<div class="gif-bank" aria-hidden="true"></div>
+
+<canvas id="scene3d" class="scene3d" aria-hidden="true"></canvas>
+
+<main class="scene" id="main">
+  <p class="scene-hud" aria-hidden="true">scroll to move &middot; drag to orbit &middot; click a screen</p>
+
+  <section class="window" id="about" aria-labelledby="about-title">
+    <div class="window-box">
+      <div class="window-bar">
+        <span class="window-title" id="about-title">About</span>
+        <button type="button" class="window-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="window-body center">
+        <h2>Hi, I&rsquo;m 碧星.</h2>
+        <p>I run Linux servers and a small Kubernetes cluster because I find it fun, and I made this website because I could.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="setup" aria-labelledby="setup-title">
+    <div class="window-box">
+      <div class="window-bar">
+        <span class="window-title" id="setup-title">Setup</span>
+        <button type="button" class="window-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="window-body">
+        <p><a href="https://fedoraproject.org" target="_blank" rel="noopener noreferrer">Fedora</a> on the machines, containers for most things, Kubernetes for the rest, and Terraform for the cloud. Ansible rebuilds it all from git when something breaks.</p>
+        <ul class="chips">
+          <li class="chip">Fedora</li>
+          <li class="chip">Podman</li>
+          <li class="chip">Kubernetes</li>
+          <li class="chip">Terraform</li>
+          <li class="chip">Ansible</li>
+          <li class="chip">Cloudflare</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="moments" aria-labelledby="moments-title">
+    <div class="window-box">
+      <div class="window-bar">
+        <span class="window-title" id="moments-title">Moments</span>
+        <button type="button" class="window-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="window-body center">
+        <p>In no particular order.</p>
+        <div class="carousel">
+          <div class="stage">
+            <ul class="memes">
+              <li class="meme" style="--i: 0"><img src="/images/anon-crine.gif" alt="Anon crying" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 1"><img src="/images/anon-heart.gif" alt="Anon, unimpressed" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 2"><img src="/images/sakiko-sip.gif" alt="Sakiko sipping tea" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 3"><img src="/images/sakiko-spin.gif" alt="Sakiko plush, spinning" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 4"><img src="/images/soyo-peek.gif" alt="Soyo and her phone" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 5"><img src="/images/tomori-GUGUGAGA.gif" alt="Tomori, as a penguin" loading="lazy" width="176" height="176"></li>
+              <li class="meme" style="--i: 6"><img src="/images/uika-throws-mutsumi.gif" alt="The night-steps scene" loading="lazy" width="176" height="176"></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="window" id="links" aria-labelledby="links-title">
+    <div class="window-box">
+      <div class="window-bar">
+        <span class="window-title" id="links-title">Links</span>
+        <button type="button" class="window-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="window-body center">
+        <ul class="links">
+          <li><a class="btn btn-primary" href="/portfolio/">The professional me</a></li>
+          <li><a class="btn" href="https://github.com/bi-xing" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="taskbar">
+  <a class="brand" href="#main">碧星</a>
+  <p class="taskbar-note"><svg class="copyleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M8.85 7.5A5.5 5.5 0 1 1 8.85 16.5"></path></svg> 2026 碧星</p>
+</footer>
+
+<script src="vendor/omggif.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
