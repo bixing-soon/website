@@ -120,6 +120,10 @@ var SCREEN_H = 320;
 // Content pages are drawn much larger so they stay crisp when zoomed into.
 var PAGE_W = 1080;
 var PAGE_H = 720;
+// On-screen "page" billboard size in world units (matches the PlaneGeometry in
+// makeUnit). Kept here so the zoom-fit maths and the mesh stay in sync.
+var CONTENT_W = 1.8;
+var CONTENT_H = 1.2;
 // Canvas font stack. Avoid generic keywords (e.g. ui-rounded) so an unsupported
 // family can't reject the whole `font` assignment; quoted names fall back safely.
 var FONT = '"Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif';
@@ -577,13 +581,11 @@ function init3D(THREE) {
     }
 
     // a small in-page footer bar, like a real page's status line
+    x.textAlign = 'left';
     x.textBaseline = 'middle';
     x.fillStyle = '#8b7893';
     x.font = '400 22px ' + FONT;
     x.fillText('bixing.me/' + def.id, PAD, H - 34);
-    x.textAlign = 'right';
-    x.fillText('\u2715  to close', W - PAD, H - 34);
-    x.textAlign = 'left';
 
     }
 
@@ -646,7 +648,7 @@ function init3D(THREE) {
 
     var contentTex = contentTexture(def);
     var content = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.8, 1.2),
+      new THREE.PlaneGeometry(CONTENT_W, CONTENT_H),
       new THREE.MeshBasicMaterial({ map: contentTex.texture, toneMapped: false })
     );
     content.position.set(0, SCREEN_Y, BD / 2 + 0.07);
@@ -687,7 +689,7 @@ function init3D(THREE) {
   var R = 6;
   var STEP = (Math.PI * 2) / N;
   var NORMAL_DIST = 6.5;
-  var ZOOM_DIST = 1.2;
+  // no fixed zoom distance — it is fit to the viewport in fitDistance(), below
   var LOOK_Y = SCREEN_Y;
 
   var contentScreens = [];
@@ -981,6 +983,17 @@ function init3D(THREE) {
   var zoomT = 0;          // blend between the two (0..1)
   var zoomedScreen = null; // the big screen we've zoomed into, or null
 
+  // Distance at which a w x h plane just fills the viewport, plus a little
+  // margin. A fixed zoom distance framed the page far too tightly on tall,
+  // narrow phone screens (the page overflowed and the close button fell off
+  // screen); fitting to the camera's aspect keeps the whole page reachable.
+  function fitDistance(w, h) {
+    var tanHalf = Math.tan(camera.fov * Math.PI / 360);
+    var dH = (h / 2) / tanHalf;
+    var dW = (w / 2) / (tanHalf * camera.aspect);
+    return Math.max(dH, dW) * 1.15;
+  }
+
   function startZoom(object) {
     zoomLook = new THREE.Vector3();
     object.getWorldPosition(zoomLook);
@@ -1011,6 +1024,13 @@ function init3D(THREE) {
   var moved = 0;
   var lastX = 0;
   var lastY = 0;
+  // touch gesture state: lock to a horizontal (orbit) or vertical (move) axis
+  // so a swipe can change towers without also tilting the camera
+  var isTouch = false;
+  var axis = null;
+  var totDx = 0;
+  var totDy = 0;
+  var TOUCH_SLOP = 12;
 
   function setPointer(e) {
     pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -1029,7 +1049,7 @@ function init3D(THREE) {
   // the close (X) button lives in the top-right of each page (matches
   // drawCloseButton in contentTexture)
   function onCloseButton(uv) {
-    return !!uv && uv.x > 0.86 && uv.y > 0.85;
+    return !!uv && uv.x > 0.84 && uv.y > 0.82;
   }
 
   // a clickable region on the page (an icon or the text link), tested in
@@ -1065,6 +1085,10 @@ function init3D(THREE) {
     moved = 0;
     lastX = e.clientX;
     lastY = e.clientY;
+    isTouch = e.pointerType === 'touch';
+    axis = null;
+    totDx = 0;
+    totDy = 0;
     if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
     requestRender();
   });
@@ -1078,6 +1102,19 @@ function init3D(THREE) {
       lastY = e.clientY;
       moved += Math.abs(dx) + Math.abs(dy);
       if (zoomedScreen) return; // a page doesn't orbit
+      if (isTouch) {
+        totDx += dx;
+        totDy += dy;
+        if (!axis && (Math.abs(totDx) > TOUCH_SLOP || Math.abs(totDy) > TOUCH_SLOP)) {
+          axis = Math.abs(totDy) > Math.abs(totDx) ? 'y' : 'x';
+        }
+        if (axis === 'x') {
+          // horizontal drag orbits; vertical is reserved for the swipe
+          yaw -= dx * 0.006;
+          requestRender();
+        }
+        return;
+      }
       yaw -= dx * 0.006;
       pitch = Math.max(-0.1, Math.min(1.0, pitch + dy * 0.005));
       requestRender();
@@ -1111,7 +1148,20 @@ function init3D(THREE) {
     if (!dragging) return;
     dragging = false;
     requestRender();
-    if (moved > 6) return; // it was a drag, not a click
+
+    // a vertical swipe moves between towers — the touch equivalent of the wheel
+    if (axis === 'y') {
+      var swiped = Math.abs(totDy) > 30;
+      axis = null;
+      if (swiped) {
+        focus = nearestIndex(focus + (totDy < 0 ? 1 : -1));
+        requestRender();
+      }
+      return;
+    }
+    axis = null;
+
+    if (moved > (isTouch ? TOUCH_SLOP : 6)) return; // it was a drag, not a click
     setPointer(e);
     var hit = pick();
 
@@ -1132,20 +1182,20 @@ function init3D(THREE) {
     if (hit.kind === 'portfolio') {
       focus = nearestIndex(0);
       startZoom(hit.mesh);
-      distTarget = ZOOM_DIST;
+      distTarget = fitDistance(0.5, 0.82);
       requestRender();
       window.setTimeout(function () { window.location.href = '/portfolio/'; }, 800);
       return;
     }
     focus = nearestIndex(hit.mesh.userData.screenIndex);
     startZoom(hit.mesh);
-    distTarget = ZOOM_DIST;
+    distTarget = fitDistance(CONTENT_W, CONTENT_H);
     zoomedScreen = hit.mesh;
     document.body.classList.add('in-page'); // hides the orbit HUD
     requestRender();
   });
 
-  canvas.addEventListener('pointercancel', function () { dragging = false; });
+  canvas.addEventListener('pointercancel', function () { dragging = false; axis = null; });
 
   // moving the pointer off the canvas should not leave an icon lit
   canvas.addEventListener('pointerleave', function () { setHoverIcon(null, -1); });
@@ -1165,6 +1215,8 @@ function init3D(THREE) {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight, false);
+    // re-fit the zoomed page if the viewport shape changed (e.g. rotation)
+    if (zoomedScreen) distTarget = fitDistance(CONTENT_W, CONTENT_H);
     requestRender();
   });
 
