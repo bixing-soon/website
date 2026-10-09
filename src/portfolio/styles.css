@@ -523,17 +523,32 @@ a.contact-card:hover {
 
   .header-inner {
     flex-wrap: wrap;
-    row-gap: 0;
+  }
+
+  /* the nav gets its own full-width row, and the links stay on one line
+     instead of stacking into a vertical list on narrow screens */
+  .site-nav {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .site-nav ul {
-    flex-wrap: wrap;
-    row-gap: 0;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .site-nav ul::-webkit-scrollbar {
+    display: none;
   }
 
   .site-nav a {
-    padding-block: 0.65rem;
+    padding: 0.65rem 0.5rem;
     font-size: 0.88rem;
+    white-space: nowrap;
   }
 }
 
