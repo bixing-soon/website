@@ -286,6 +286,7 @@ body.webgl .scene3d {
 
 body.webgl {
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body.webgl .scene {
@@ -315,9 +316,22 @@ body.webgl .scene-hud {
   display: block;
 }
 
-/* inside a page, scrolling/dragging do nothing — drop the orbit hint */
+/* the orbit hint is only a nudge: show it steadily once the scene is up, then
+   fade away after 5s. Gated on :not(.pending3d) so it starts after the boot
+   screen rather than while it's still hidden behind it. */
+html:not(.pending3d) body.webgl .scene-hud {
+  animation: hud-hide 5s ease-in forwards;
+}
+
+/* inside a page, scrolling/dragging do nothing — hide the hint with visibility
+   (not display) so toggling it can't restart the animation */
 .in-page .scene-hud {
-  display: none;
+  visibility: hidden;
+}
+
+@keyframes hud-hide {
+  0%, 90% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* ---------- chips ---------- */
