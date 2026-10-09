@@ -1,0 +1,478 @@
+:root {
+  color-scheme: light;
+
+  --bg: #fff7fb;
+  --bg-2: #fdeef6;
+  --surface: #ffffff;
+  --ink: #48384f;
+  --muted: #8b7f95;
+  --accent: #ef94bd;
+  --accent-ink: #ffffff;
+  --border: #f3dcea;
+  --shadow: 0 16px 34px -22px rgba(176, 120, 162, 0.65);
+  --shadow-lg: 0 34px 60px -30px rgba(150, 90, 135, 0.6);
+  --header-bg: rgba(255, 247, 251, 0.78);
+  --panel: #2a2130;        /* dark pastel (footer + boot) */
+  --panel-2: #3a2e40;
+  --panel-border: #4c3e53;
+  --panel-ink: #ead6e6;
+  --panel-muted: #a790a8;
+
+  --font: ui-rounded, "Hiragino Maru Gothic ProN", "Quicksand", "Nunito",
+    "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 20px;
+  --maxw: 46rem;
+  --ease: 0.25s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  font: 16px/1.7 var(--font);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(rgba(239, 148, 189, 0.16) 1.3px, transparent 1.4px),
+    radial-gradient(42rem 30rem at 6% -12%, #ffe6f2, transparent 70%),
+    radial-gradient(42rem 30rem at 106% 6%, #ede6ff, transparent 72%);
+  background-size: 22px 22px, auto, auto;
+  background-attachment: fixed;
+  background-repeat: repeat, no-repeat, no-repeat;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6rem;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 5.5vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.35rem, 3.2vw, 1.8rem);
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 12px 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+  z-index: 60;
+}
+
+/* ---------- desktop ---------- */
+
+.scene {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ---------- taskbar ---------- */
+
+.taskbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.4rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--panel-ink);
+}
+
+.taskbar .brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--panel-ink);
+  text-decoration: none;
+}
+
+.taskbar-note {
+  margin: 0;
+  color: var(--panel-muted);
+  font-size: 0.72rem;
+}
+
+.copyleft {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+/* ---------- boot (pre-3D) ---------- */
+/* While the 3D scene loads, hide the plain sections so they can't flash in
+   first; show a small sakiko-sipping card with a pastel loading bar instead.
+   Removed the moment the scene is ready. */
+.pending3d .scene-hud,
+.pending3d .taskbar {
+  display: none;
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  background: var(--panel);
+}
+
+.pending3d .boot {
+  display: flex;
+}
+
+.boot-gif {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: clamp(28rem, 96vmin, 64rem);
+  height: auto;
+  opacity: 0.45;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+  animation: bootfloat 7s ease-in-out infinite alternate;
+}
+
+.boot-name,
+.boot-bar {
+  position: relative;
+  z-index: 1;
+}
+
+.boot-name {
+  margin: 0;
+  color: var(--accent);
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.boot-bar {
+  width: 132px;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel-2);
+}
+
+.boot-bar span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: bootbar 1.2s ease-in-out infinite;
+}
+
+@keyframes bootbar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes bootfloat {
+  from {
+    transform: translateY(3px);
+  }
+  to {
+    transform: translateY(-7px);
+  }
+}
+
+/* ---------- 3D room (progressive enhancement) ---------- */
+
+/* the one active GIF lives here: in the render tree so it animates, but
+   tucked behind the canvas. Only the focused computer's GIF is ever added. */
+.gif-bank {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gif-bank img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: auto;
+}
+
+.scene3d {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+body.webgl .scene3d {
+  display: block;
+}
+
+body.webgl {
+  overflow: hidden;
+}
+
+body.webgl .scene {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* the footer is already a solid dark pastel — nothing to do over the canvas */
+
+.scene-hud {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 3.6rem;
+  z-index: 1;
+  display: none;
+  margin: 0;
+  text-align: center;
+  color: var(--panel-ink);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+body.webgl .scene-hud {
+  display: block;
+}
+
+/* inside a page, scrolling/dragging do nothing — drop the orbit hint */
+.in-page .scene-hud {
+  display: none;
+}
+
+/* ---------- chips ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.32rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-2);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* ---------- memes: tidy grid, upgraded to a 3D ring ---------- */
+
+.carousel {
+  display: grid;
+  place-items: center;
+}
+
+.stage {
+  transform-style: preserve-3d;
+}
+
+.memes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meme {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.meme img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 11px;
+  background: var(--bg-2);
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) {
+  .meme:hover img {
+    transform: rotate(-2deg) scale(1.03);
+  }
+}
+
+@media (min-width: 52rem) and (prefers-reduced-motion: no-preference) {
+  .carousel {
+    perspective: 1200px;
+    height: 18rem;
+  }
+
+  .stage {
+    transform: rotateX(calc(-12deg + var(--tilt-x, 0deg))) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+
+  .memes {
+    display: block;
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    --step: 51.4286deg;
+    --r: 12rem;
+    transform-style: preserve-3d;
+    animation: ring 54s linear infinite;
+  }
+
+  .memes:hover,
+  .memes:focus-within {
+    animation-play-state: paused;
+  }
+
+  .meme {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    transform: rotateY(calc(var(--i) * var(--step))) translateZ(var(--r));
+  }
+
+  @keyframes ring {
+    to {
+      transform: rotateY(-360deg);
+    }
+  }
+}
+
+/* ---------- links ---------- */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

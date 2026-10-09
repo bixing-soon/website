@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>碧星</title>
+<meta name="description" content="Hiya, I'm bixing. Welcome to my corner of the internet, feel free to take a look around.">
+<meta name="theme-color" content="#fff7fb">
+<meta name="color-scheme" content="light">
+<script>
+// Decide before first paint whether the 3D scene is coming, so nothing flashes
+// on screen first. main.js removes this class once the scene is up.
+(function () {
+  try {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var c = document.createElement('canvas');
+    var gl = !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+    if (gl && !reduce) {
+      window.__boot = performance.now();
+      document.documentElement.classList.add('pending3d');
+      // safety: if the 3D bundle never arrives, reveal the page
+      window.setTimeout(function () {
+        document.documentElement.classList.remove('pending3d');
+      }, 5000);
+    }
+  } catch (e) { /* no WebGL: just show the page */ }
+})();
+</script>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="no-js">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="boot" aria-hidden="true">
+  <img class="boot-gif" src="/images/sakiko-sip.gif" alt="">
+  <p class="boot-name">碧星</p>
+  <div class="boot-bar"><span></span></div>
+</div>
+
+<div class="gif-bank" aria-hidden="true"></div>
+
+<canvas id="scene3d" class="scene3d" aria-hidden="true"></canvas>
+
+<main class="scene" id="main">
+  <p class="scene-hud" aria-hidden="true">scroll to move &middot; drag to orbit</p>
+</main>
+
+<footer class="taskbar">
+  <a class="brand" href="#main">碧星</a>
+  <p class="taskbar-note"><svg class="copyleft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M8.85 7.5A5.5 5.5 0 1 1 8.85 16.5"></path></svg> 2026 碧星</p>
+</footer>
+
+<script src="vendor/omggif.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
