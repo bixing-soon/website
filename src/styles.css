@@ -12,6 +12,11 @@
   --shadow: 0 16px 34px -22px rgba(176, 120, 162, 0.65);
   --shadow-lg: 0 34px 60px -30px rgba(150, 90, 135, 0.6);
   --header-bg: rgba(255, 247, 251, 0.78);
+  --panel: #2a2130;        /* dark pastel (footer + boot) */
+  --panel-2: #3a2e40;
+  --panel-border: #4c3e53;
+  --panel-ink: #ead6e6;
+  --panel-muted: #a790a8;
 
   --font: ui-rounded, "Hiragino Maru Gothic ProN", "Quicksand", "Nunito",
     "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -130,25 +135,25 @@ a {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1.25rem;
-  padding: 0.75rem clamp(1.25rem, 4vw, 2.5rem);
-  border-top: 1px solid var(--border);
-  background: var(--header-bg);
-  backdrop-filter: blur(10px);
+  gap: 0.25rem 1rem;
+  padding: 0.4rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--panel-ink);
 }
 
 .taskbar .brand {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--ink);
+  color: var(--panel-ink);
   text-decoration: none;
 }
 
 .taskbar-note {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.82rem;
+  color: var(--panel-muted);
+  font-size: 0.72rem;
 }
 
 .copyleft {
@@ -161,7 +166,6 @@ a {
 /* While the 3D scene loads, hide the plain sections so they can't flash in
    first; show a small sakiko-sipping card with a pastel loading bar instead.
    Removed the moment the scene is ready. */
-.pending3d .window,
 .pending3d .scene-hud,
 .pending3d .taskbar {
   display: none;
@@ -176,6 +180,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 0.85rem;
+  background: var(--panel);
 }
 
 .pending3d .boot {
@@ -186,9 +191,9 @@ a {
   position: absolute;
   inset: 0;
   margin: auto;
-  width: clamp(20rem, 78vmin, 46rem);
+  width: clamp(28rem, 96vmin, 64rem);
   height: auto;
-  opacity: 0.3;
+  opacity: 0.45;
   pointer-events: none;
   -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
@@ -213,9 +218,9 @@ a {
   width: 132px;
   height: 8px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--panel-border);
   border-radius: 999px;
-  background: var(--bg-2);
+  background: var(--panel-2);
 }
 
 .boot-bar span {
@@ -289,15 +294,7 @@ body.webgl .scene {
   pointer-events: none;
 }
 
-body.webgl .window {
-  pointer-events: auto;
-}
-
-/* a blurred bar over a live canvas is re-composited every frame — make it solid */
-body.webgl .taskbar {
-  background: var(--bg-2);
-  backdrop-filter: none;
-}
+/* the footer is already a solid dark pastel — nothing to do over the canvas */
 
 .scene-hud {
   position: fixed;
@@ -308,7 +305,7 @@ body.webgl .taskbar {
   display: none;
   margin: 0;
   text-align: center;
-  color: var(--muted);
+  color: var(--panel-ink);
   font-size: 0.82rem;
   letter-spacing: 0.04em;
   pointer-events: none;
@@ -318,107 +315,9 @@ body.webgl .scene-hud {
   display: block;
 }
 
-/* ---------- screens (windows) ---------- */
-/* Default (no JS): readable stacked cards. With JS (see .js below): 3D overlays. */
-
-.window {
-  width: min(100% - 2.5rem, var(--maxw));
-  margin: 1.5rem auto;
-}
-
-.window-box {
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.window-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.6rem 0.7rem 0.6rem 1rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-2);
-}
-
-.window-title {
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
-.window-close {
+/* inside a page, scrolling/dragging do nothing — drop the orbit hint */
+.in-page .scene-hud {
   display: none;
-  place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: var(--ease);
-}
-
-.window-close:hover {
-  border-color: transparent;
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
-.window-body {
-  padding: clamp(1.25rem, 3.5vw, 2rem);
-}
-
-.window-body.center {
-  text-align: center;
-}
-
-/* With JS + WebGL: screens become 3D overlays. */
-.js .window {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
-  width: auto;
-  margin: 0;
-  padding: 1.25rem;
-  background: rgba(72, 56, 79, 0.3);
-  backdrop-filter: blur(6px);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.28s ease, visibility 0.28s;
-  perspective: 1200px;
-}
-
-.js .window.is-open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.js .window-box {
-  width: min(100%, var(--maxw));
-  max-height: min(86svh, 42rem);
-  overflow: auto;
-  box-shadow: var(--shadow-lg);
-  transform: translateZ(-520px) rotateX(14deg) scale(0.92);
-  opacity: 0;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.4s ease;
-}
-
-.js .window.is-open .window-box {
-  transform: none;
-  opacity: 1;
-}
-
-.js .window-close {
-  display: grid;
 }
 
 /* ---------- chips ---------- */
@@ -525,11 +424,6 @@ body.webgl .scene-hud {
       transform: rotateY(-360deg);
     }
   }
-}
-
-/* don't spin the ring while its screen is closed */
-.js .window:not(.is-open) .memes {
-  animation-play-state: paused;
 }
 
 /* ---------- links ---------- */
