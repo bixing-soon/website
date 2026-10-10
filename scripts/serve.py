@@ -7,21 +7,20 @@ cannot see them. This maps them for local viewing only.
 
 import functools
 import http.server
-import os
+from pathlib import Path
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(REPO, "src")
-IMAGES = os.path.join(REPO, "images")
+REPO = Path(__file__).parent.parent
+SRC = REPO / "src"
+IMAGES = REPO / "images"
 PORT = 8000
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         if path.startswith("/images/"):
-            rel = path[len("/images/"):]
-            return os.path.join(IMAGES, *[p for p in rel.split("/") if p])
+            rel = path.removeprefix("/images/").lstrip("/")
+            return str(IMAGES / rel)
         return super().translate_path(path)
-
 
 def main():
     handler = functools.partial(Handler, directory=SRC)
