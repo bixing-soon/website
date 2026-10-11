@@ -30,7 +30,8 @@ function revealContent() {
 // `sub` a muted subtitle under the heading.
 var SCREENS = [
   {
-    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm', fallback: '/images/anon-heart-fallback.webp',
+    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm',
+    fallback: '/images/anon-heart-fallback.webp', fallbackFrames: 16,
     heading: 'Hiya, I\u2019m bixing.',
     sub: 'welcome to my corner of the internet',
     paras: [
@@ -44,15 +45,18 @@ var SCREENS = [
     textLink: { label: 'Source Code', url: 'https://github.com/bixing-soon/website' }
   },
   {
-    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm', fallback: '/images/tomori-GUGUGAGA-fallback.webp',
+    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm',
+    fallback: '/images/tomori-GUGUGAGA-fallback.webp', fallbackFrames: 44,
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm', fallback: '/images/uika-throws-mutsumi-fallback.webp',
+    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm',
+    fallback: '/images/uika-throws-mutsumi-fallback.webp', fallbackFrames: 43,
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'links', label: 'Links', video: '/images/soyo-peek.webm', fallback: '/images/soyo-peek-fallback.webp',
+    id: 'links', label: 'Links', video: '/images/soyo-peek.webm',
+    fallback: '/images/soyo-peek-fallback.webp', fallbackFrames: 25,
     heading: 'PLACEHOLDER'
   }
 ];
@@ -128,7 +132,9 @@ var CONTENT_H = 1.2;
 // family can't reject the whole `font` assignment; quoted names fall back safely.
 var FONT = '"Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif';
 var BOOT_MS = 1150;
-var MEDIA_INTERVAL = 1000 / 12; // WebM/WebP fallbacks are encoded at 12fps
+var MEDIA_INTERVAL = 1000 / 12; // WebM/WebP fallback frames are 12fps
+var FALLBACK_COLUMNS = 5;
+var FALLBACK_ROWS = 9;
 
 function webglAvailable() {
   try {
@@ -247,7 +253,7 @@ function init3D(THREE) {
 
   /* ---- screen canvas state machine ---- */
 
-  function makeScreenState(videoUrl, imageUrl) {
+  function makeScreenState(videoUrl, imageUrl, imageFrameCount) {
     var c = document.createElement('canvas');
     c.width = SCREEN_W;
     c.height = SCREEN_H;
@@ -274,7 +280,7 @@ function init3D(THREE) {
     if (bank) bank.appendChild(v);
 
     // Firefox on Android can play these clips as videos, but cannot reliably
-    // copy their frames into canvas/WebGL. Its animated-WebP image path works.
+    // copy their frames into canvas/WebGL. Its static-WebP image path works.
     var img = document.createElement('img');
     img.decoding = 'async';
     img.alt = '';
@@ -283,7 +289,8 @@ function init3D(THREE) {
     if (bank) bank.appendChild(img);
 
     return {
-      url: videoUrl, imageUrl: imageUrl, canvas: c, ctx: ctx, texture: tex,
+      url: videoUrl, imageUrl: imageUrl, imageFrameCount: imageFrameCount,
+      imageStart: 0, canvas: c, ctx: ctx, texture: tex,
       video: v, image: img, mode: null, loaded: false,
       gen: 0, phase: 'off', bootStart: 0, lastDraw: 0
     };
@@ -310,9 +317,28 @@ function init3D(THREE) {
       height = source.videoHeight;
     } else if (state.mode === 'image') {
       source = state.image;
-      if (!state.loaded || !source.naturalWidth) return false;
-      width = source.naturalWidth;
-      height = source.naturalHeight;
+      if (!state.loaded || !source.naturalWidth || !state.imageFrameCount) return false;
+
+      // Firefox draws only a still frame from an animated image when it is
+      // passed to drawImage(). The fallback is a sprite atlas of static WebP
+      // frames; select the frame here so the canvas animation is deterministic.
+      var columns = FALLBACK_COLUMNS;
+      var rows = FALLBACK_ROWS;
+      var frameWidth = source.naturalWidth / columns;
+      var frameHeight = source.naturalHeight / rows;
+      var frame = Math.floor((now - state.imageStart) / MEDIA_INTERVAL) % state.imageFrameCount;
+      var sx = (frame % columns) * frameWidth;
+      var sy = Math.floor(frame / columns) * frameHeight;
+      var scale = Math.max(SCREEN_W / frameWidth, SCREEN_H / frameHeight);
+      ctx.drawImage(
+        source,
+        sx, sy, frameWidth, frameHeight,
+        (SCREEN_W - frameWidth * scale) / 2,
+        (SCREEN_H - frameHeight * scale) / 2,
+        frameWidth * scale,
+        frameHeight * scale
+      );
+      return true;
     } else {
       return false;
     }
@@ -696,7 +722,7 @@ function init3D(THREE) {
     dframe.rotation.z = tilts[index % 4];
     g.add(dframe);
 
-    var st = makeScreenState(def.video, def.fallback);
+    var st = makeScreenState(def.video, def.fallback, def.fallbackFrames);
     var decor = new THREE.Mesh(
       new THREE.PlaneGeometry(0.56, 0.38),
       new THREE.MeshBasicMaterial({ map: st.texture, toneMapped: false })
@@ -847,7 +873,12 @@ function init3D(THREE) {
     if (useAnimatedWebPFallback && state.imageUrl) {
       state.mode = 'image';
       var img = state.image;
-      img.onload = function () { if (state.gen === gen) state.loaded = true; };
+      img.onload = function () {
+        if (state.gen === gen) {
+          state.imageStart = performance.now();
+          state.loaded = true;
+        }
+      };
       img.onerror = function () { if (state.gen === gen) state.loaded = false; };
       img.src = state.imageUrl;
       return;
