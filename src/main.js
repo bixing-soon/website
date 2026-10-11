@@ -30,7 +30,7 @@ function revealContent() {
 // `sub` a muted subtitle under the heading.
 var SCREENS = [
   {
-    id: 'welcome', label: 'Welcome', gif: '/images/anon-heart.gif',
+    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm',
     heading: 'Hiya, I\u2019m bixing.',
     sub: 'welcome to my corner of the internet',
     paras: [
@@ -44,15 +44,15 @@ var SCREENS = [
     textLink: { label: 'Source Code', url: 'https://github.com/bixing-soon/website' }
   },
   {
-    id: 'setup', label: 'Setup', gif: '/images/tomori-GUGUGAGA.gif',
+    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'moments', label: 'Moments', gif: '/images/uika-throws-mutsumi.gif',
+    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'links', label: 'Links', gif: '/images/soyo-peek.gif',
+    id: 'links', label: 'Links', video: '/images/soyo-peek.webm',
     heading: 'PLACEHOLDER'
   }
 ];
@@ -127,9 +127,7 @@ var CONTENT_H = 1.2;
 // Canvas font stack. Avoid generic keywords (e.g. ui-rounded) so an unsupported
 // family can't reject the whole `font` assignment; quoted names fall back safely.
 var FONT = '"Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif';
-var GIF_MAX_W = 320; // decode GIFs no larger than this (memory)
 var BOOT_MS = 1150;
-var GIF_INTERVAL = 1000 / 12; // draw the GIF ~12fps
 
 function webglAvailable() {
   try {
@@ -246,7 +244,7 @@ function init3D(THREE) {
 
   /* ---- screen canvas state machine ---- */
 
-  function makeScreenState(gifUrl) {
+  function makeScreenState(videoUrl) {
     var c = document.createElement('canvas');
     c.width = SCREEN_W;
     c.height = SCREEN_H;
@@ -254,15 +252,25 @@ function init3D(THREE) {
     var tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
+
+    // A muted, looping video decoded off-screen and painted onto the canvas.
+    // It stays in the document (hidden) so the browser keeps decoding it.
+    var v = document.createElement('video');
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.preload = 'none';
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('aria-hidden', 'true');
+    v.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+    if (bank) bank.appendChild(v);
+
     return {
-      url: gifUrl, canvas: c, ctx: ctx, texture: tex,
-      mode: null,            // 'og' (omggif) | 'img' (fallback) | null
-      img: null, loaded: false,
-      gen: 0, phase: 'off', bootStart: 0, lastDraw: 0,
-      ready: false, reader: null, gw: 0, gh: 0, dw: 0, dh: 0, scale: 1,
-      count: 0, meta: null, durs: null, total: 0, start: 0, lastElapsed: 0, cur: -1,
-      acc: null, accCtx: null, tmpCanvas: null, tmpCtx: null, tmpBuf: null, imageData: null,
-      frames: null, decoder: null
+      url: videoUrl, canvas: c, ctx: ctx, texture: tex, video: v,
+      mode: null,           // 'video' | null
+      loaded: false, gen: 0, phase: 'off', bootStart: 0, lastDraw: 0
     };
   }
 
@@ -277,19 +285,13 @@ function init3D(THREE) {
   function drawImageCover(state, now) {
     var ctx = state.ctx;
 
-    if (state.mode === 'og') {
-      if (!state.ready) return false;
-      drawStreaming(state, now);
-      return true;
-    }
-
-    if (state.mode === 'img') {
-      var img = state.img;
-      if (!state.loaded || !img || !img.naturalWidth) return false;
-      var iw = img.naturalWidth;
-      var ih = img.naturalHeight;
-      var s = Math.max(SCREEN_W / iw, SCREEN_H / ih);
-      ctx.drawImage(img, (SCREEN_W - iw * s) / 2, (SCREEN_H - ih * s) / 2, iw * s, ih * s);
+    if (state.mode === 'video') {
+      var v = state.video;
+      if (!state.loaded || !v || v.readyState < 2 || !v.videoWidth) return false;
+      var vw = v.videoWidth;
+      var vh = v.videoHeight;
+      var s = Math.max(SCREEN_W / vw, SCREEN_H / vh);
+      ctx.drawImage(v, (SCREEN_W - vw * s) / 2, (SCREEN_H - vh * s) / 2, vw * s, vh * s);
       return true;
     }
 
@@ -670,7 +672,7 @@ function init3D(THREE) {
     dframe.rotation.z = tilts[index % 4];
     g.add(dframe);
 
-    var st = makeScreenState(def.gif);
+    var st = makeScreenState(def.video);
     var decor = new THREE.Mesh(
       new THREE.PlaneGeometry(0.56, 0.38),
       new THREE.MeshBasicMaterial({ map: st.texture, toneMapped: false })
@@ -788,7 +790,7 @@ function init3D(THREE) {
     });
   })();
 
-  /* ---- GIF loading: only the focused computer ---- */
+  /* ---- video loading: only the focused computer ---- */
 
   function wrapIndex(i) {
     return ((i % N) + N) % N;
@@ -796,163 +798,33 @@ function init3D(THREE) {
 
   var activeIndex = -1;
 
-  function closeFrames(state) {
-    state.ready = false;
-    state.reader = null;
-    state.meta = null;
-    state.durs = null;
-    state.acc = null;
-    state.accCtx = null;
-    state.tmpCanvas = null;
-    state.tmpCtx = null;
-    state.tmpBuf = null;
-    state.imageData = null;
-    state.frames = null;
-    state.decoder = null;
-    state.cur = -1;
-  }
-
   function unloadScreen(state) {
     state.gen += 1;
     state.loaded = false;
     state.mode = null;
-    state.total = 0;
-    closeFrames(state);
-    if (state.img) {
-      if (bank && state.img.parentNode) bank.removeChild(state.img);
-      state.img.src = '';
-      state.img = null;
-    }
+    var v = state.video;
+    v.pause();
+    v.removeAttribute('src');
+    v.load(); // detach the stream and release the decoder
     state.phase = 'off';
     drawOffBase(state);
     state.texture.needsUpdate = true;
   }
 
-  function loadFallbackImg(state, gen) {
-    state.mode = 'img';
-    var img = new Image();
-    img.decoding = 'async';
-    img.onload = function () { if (state.gen === gen) state.loaded = true; };
-    img.onerror = function () { state.loaded = false; };
-    img.src = state.url;
-    state.img = img;
-    state.loaded = false;
-    if (bank) bank.appendChild(img);
-  }
-
-  // Stream the GIF: keep one composited buffer and composite frames forward as
-  // time advances, honoring transparency and disposal. Memory stays ~constant
-  // no matter how many frames the GIF has (some here have 100+).
-  function prepareReader(state, reader) {
-    var gw = reader.width;
-    var gh = reader.height;
-    var count = reader.numFrames();
-    var scale = Math.min(1, GIF_MAX_W / gw);
-    var dw = Math.max(1, Math.round(gw * scale));
-    var dh = Math.max(1, Math.round(gh * scale));
-
-    var meta = new Array(count);
-    var durs = new Float64Array(count);
-    var total = 0;
-    for (var i = 0; i < count; i++) {
-      var info = reader.frameInfo(i);
-      var d = info.delay || 10;
-      meta[i] = { x: info.x, y: info.y, w: info.width, h: info.height, disposal: info.disposal };
-      durs[i] = d * 10;
-      total += d * 10;
-    }
-
-    var acc = document.createElement('canvas');
-    acc.width = dw;
-    acc.height = dh;
-    var tmp = document.createElement('canvas');
-    tmp.width = gw;
-    tmp.height = gh;
-
-    state.reader = reader;
-    state.gw = gw;
-    state.gh = gh;
-    state.dw = dw;
-    state.dh = dh;
-    state.scale = scale;
-    state.count = count;
-    state.meta = meta;
-    state.durs = durs;
-    state.total = total || 1;
-    state.acc = acc;
-    state.accCtx = acc.getContext('2d');
-    state.tmpCanvas = tmp;
-    state.tmpCtx = tmp.getContext('2d');
-    state.tmpBuf = new Uint8ClampedArray(gw * gh * 4);
-    state.imageData = state.tmpCtx.createImageData(gw, gh);
-    state.lastElapsed = 0;
-    state.start = performance.now();
-    state.ready = true;
-    resetComposite(state);
-  }
-
-  function resetComposite(state) {
-    if (state.accCtx) state.accCtx.clearRect(0, 0, state.dw, state.dh);
-    state.cur = -1;
-  }
-
-  function composeTo(state, target) {
-    var meta = state.meta;
-    for (var i = state.cur + 1; i <= target; i++) {
-      if (i > 0 && meta[i - 1].disposal === 2) {
-        var p = meta[i - 1];
-        state.accCtx.clearRect(p.x * state.scale, p.y * state.scale, p.w * state.scale, p.h * state.scale);
-      }
-      state.tmpBuf.fill(0);
-      state.reader.decodeAndBlitFrameRGBA(i, state.tmpBuf);
-      state.imageData.data.set(state.tmpBuf);
-      state.tmpCtx.clearRect(0, 0, state.gw, state.gh);
-      state.tmpCtx.putImageData(state.imageData, 0, 0);
-      // source-over: transparent pixels leave the composite untouched
-      state.accCtx.drawImage(state.tmpCanvas, 0, 0, state.gw, state.gh, 0, 0, state.dw, state.dh);
-      state.cur = i;
-    }
-  }
-
-  function drawStreaming(state, now) {
-    var elapsed = (now - state.start) % state.total;
-    if (elapsed < state.lastElapsed) resetComposite(state); // wrapped
-    state.lastElapsed = elapsed;
-
-    var target = state.count - 1;
-    var acc = 0;
-    for (var i = 0; i < state.count; i++) {
-      acc += state.durs[i];
-      if (elapsed < acc) { target = i; break; }
-    }
-    if (target < state.cur) resetComposite(state);
-    composeTo(state, target);
-
-    var w = state.dw;
-    var h = state.dh;
-    var s = Math.max(SCREEN_W / w, SCREEN_H / h);
-    state.ctx.drawImage(state.acc, (SCREEN_W - w * s) / 2, (SCREEN_H - h * s) / 2, w * s, h * s);
-  }
-
   function loadScreen(state) {
     state.gen += 1;
     var gen = state.gen;
+    var v = state.video;
+    state.mode = 'video';
+    state.loaded = false;
 
-    if (!window.GifReader) {
-      loadFallbackImg(state, gen);
-      return;
-    }
-
-    state.mode = 'og';
-    fetch(state.url)
-      .then(function (res) { return res.arrayBuffer(); })
-      .then(function (buf) {
-        if (state.gen !== gen) return;
-        prepareReader(state, new window.GifReader(new Uint8Array(buf)));
-      })
-      .catch(function () {
-        if (state.gen === gen) loadFallbackImg(state, gen);
-      });
+    v.addEventListener('canplay', function onCanPlay() {
+      if (state.gen === gen) state.loaded = true;
+    }, { once: true });
+    v.src = state.url;
+    v.load();
+    var p = v.play();
+    if (p && p['catch']) p['catch'](function () {}); // autoplay can be refused
   }
 
   function activateScreen(index) {
@@ -1313,11 +1185,9 @@ function init3D(THREE) {
           s.texture.needsUpdate = true;
           animating = true;
         } else if (s.phase === 'on') {
-          if (nowMs - s.lastDraw >= GIF_INTERVAL) {
-            drawOn(s, nowMs);
-            s.texture.needsUpdate = true;
-            s.lastDraw = nowMs;
-          }
+          // the video decodes on its own; just repaint the canvas each frame
+          drawOn(s, nowMs);
+          s.texture.needsUpdate = true;
           animating = true;
         }
       });
