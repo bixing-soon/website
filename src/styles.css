@@ -252,22 +252,14 @@ a {
 
 /* ---------- 3D room (progressive enhancement) ---------- */
 
-/* the one active GIF lives here: in the render tree so it animates, but
-   tucked behind the canvas. Only the focused computer's GIF is ever added. */
+/* the active clip lives here: in the render tree so it keeps decoding, but
+   tucked behind the canvas. Only the focused computer's video is ever added. */
 .gif-bank {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-}
-
-.gif-bank img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 220px;
-  height: auto;
 }
 
 .scene3d {
