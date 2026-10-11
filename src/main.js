@@ -30,7 +30,7 @@ function revealContent() {
 // `sub` a muted subtitle under the heading.
 var SCREENS = [
   {
-    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm',
+    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm', fallback: '/images/anon-heart-fallback.webp',
     heading: 'Hiya, I\u2019m bixing.',
     sub: 'welcome to my corner of the internet',
     paras: [
@@ -44,15 +44,15 @@ var SCREENS = [
     textLink: { label: 'Source Code', url: 'https://github.com/bixing-soon/website' }
   },
   {
-    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm',
+    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm', fallback: '/images/tomori-GUGUGAGA-fallback.webp',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm',
+    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm', fallback: '/images/uika-throws-mutsumi-fallback.webp',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'links', label: 'Links', video: '/images/soyo-peek.webm',
+    id: 'links', label: 'Links', video: '/images/soyo-peek.webm', fallback: '/images/soyo-peek-fallback.webp',
     heading: 'PLACEHOLDER'
   }
 ];
@@ -128,6 +128,7 @@ var CONTENT_H = 1.2;
 // family can't reject the whole `font` assignment; quoted names fall back safely.
 var FONT = '"Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif';
 var BOOT_MS = 1150;
+var MEDIA_INTERVAL = 1000 / 12; // WebM/WebP fallbacks are encoded at 12fps
 
 function webglAvailable() {
   try {
@@ -141,6 +142,8 @@ function webglAvailable() {
 function init3D(THREE) {
   var canvas = document.getElementById('scene3d');
   var bank = document.querySelector('.gif-bank');
+  var ua = navigator.userAgent;
+  var useAnimatedWebPFallback = /Android/i.test(ua) && /Firefox\//i.test(ua);
   if (!canvas) throw new Error('no canvas element');
 
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
@@ -244,7 +247,7 @@ function init3D(THREE) {
 
   /* ---- screen canvas state machine ---- */
 
-  function makeScreenState(videoUrl) {
+  function makeScreenState(videoUrl, imageUrl) {
     var c = document.createElement('canvas');
     c.width = SCREEN_W;
     c.height = SCREEN_H;
@@ -253,8 +256,8 @@ function init3D(THREE) {
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
 
-    // A muted, looping video decoded off-screen and painted onto the canvas.
-    // It stays in the document (hidden) so the browser keeps decoding it.
+    // Keep the muted, looping video in the viewport behind the canvas so
+    // Firefox does not suspend decoding before its frames are copied to canvas.
     var v = document.createElement('video');
     v.muted = true;
     v.loop = true;
@@ -270,10 +273,19 @@ function init3D(THREE) {
     v.style.cssText = 'position:absolute;top:0;left:0;width:220px;height:auto;';
     if (bank) bank.appendChild(v);
 
+    // Firefox on Android can play these clips as videos, but cannot reliably
+    // copy their frames into canvas/WebGL. Its animated-WebP image path works.
+    var img = document.createElement('img');
+    img.decoding = 'async';
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    img.style.cssText = 'position:absolute;top:0;left:0;width:220px;height:auto;';
+    if (bank) bank.appendChild(img);
+
     return {
-      url: videoUrl, canvas: c, ctx: ctx, texture: tex, video: v,
-      mode: null,           // 'video' | null
-      loaded: false, gen: 0, phase: 'off', bootStart: 0, lastDraw: 0
+      url: videoUrl, imageUrl: imageUrl, canvas: c, ctx: ctx, texture: tex,
+      video: v, image: img, mode: null, loaded: false,
+      gen: 0, phase: 'off', bootStart: 0, lastDraw: 0
     };
   }
 
@@ -288,17 +300,26 @@ function init3D(THREE) {
   function drawImageCover(state, now) {
     var ctx = state.ctx;
 
+    var source;
+    var width;
+    var height;
     if (state.mode === 'video') {
-      var v = state.video;
-      if (!state.loaded || !v || v.readyState < 2 || !v.videoWidth) return false;
-      var vw = v.videoWidth;
-      var vh = v.videoHeight;
-      var s = Math.max(SCREEN_W / vw, SCREEN_H / vh);
-      ctx.drawImage(v, (SCREEN_W - vw * s) / 2, (SCREEN_H - vh * s) / 2, vw * s, vh * s);
-      return true;
+      source = state.video;
+      if (!state.loaded || source.readyState < 2 || !source.videoWidth) return false;
+      width = source.videoWidth;
+      height = source.videoHeight;
+    } else if (state.mode === 'image') {
+      source = state.image;
+      if (!state.loaded || !source.naturalWidth) return false;
+      width = source.naturalWidth;
+      height = source.naturalHeight;
+    } else {
+      return false;
     }
 
-    return false;
+    var s = Math.max(SCREEN_W / width, SCREEN_H / height);
+    ctx.drawImage(source, (SCREEN_W - width * s) / 2, (SCREEN_H - height * s) / 2, width * s, height * s);
+    return true;
   }
 
   function drawScanlines(ctx, alpha) {
@@ -675,7 +696,7 @@ function init3D(THREE) {
     dframe.rotation.z = tilts[index % 4];
     g.add(dframe);
 
-    var st = makeScreenState(def.video);
+    var st = makeScreenState(def.video, def.fallback);
     var decor = new THREE.Mesh(
       new THREE.PlaneGeometry(0.56, 0.38),
       new THREE.MeshBasicMaterial({ map: st.texture, toneMapped: false })
@@ -793,7 +814,7 @@ function init3D(THREE) {
     });
   })();
 
-  /* ---- video loading: only the focused computer ---- */
+  /* ---- screen media loading: only the focused computer ---- */
 
   function wrapIndex(i) {
     return ((i % N) + N) % N;
@@ -809,6 +830,10 @@ function init3D(THREE) {
     v.pause();
     v.removeAttribute('src');
     v.load(); // detach the stream and release the decoder
+    var img = state.image;
+    img.onload = null;
+    img.onerror = null;
+    img.removeAttribute('src');
     state.phase = 'off';
     drawOffBase(state);
     state.texture.needsUpdate = true;
@@ -817,10 +842,19 @@ function init3D(THREE) {
   function loadScreen(state) {
     state.gen += 1;
     var gen = state.gen;
-    var v = state.video;
-    state.mode = 'video';
     state.loaded = false;
 
+    if (useAnimatedWebPFallback && state.imageUrl) {
+      state.mode = 'image';
+      var img = state.image;
+      img.onload = function () { if (state.gen === gen) state.loaded = true; };
+      img.onerror = function () { if (state.gen === gen) state.loaded = false; };
+      img.src = state.imageUrl;
+      return;
+    }
+
+    var v = state.video;
+    state.mode = 'video';
     v.addEventListener('canplay', function onCanPlay() {
       if (state.gen === gen) state.loaded = true;
     }, { once: true });
@@ -1182,15 +1216,19 @@ function init3D(THREE) {
           if (p >= 1) {
             s.phase = 'on';
             drawOn(s, nowMs);
+            s.lastDraw = nowMs;
           } else {
             drawBoot(s, p, nowMs);
           }
           s.texture.needsUpdate = true;
           animating = true;
         } else if (s.phase === 'on') {
-          // the video decodes on its own; just repaint the canvas each frame
-          drawOn(s, nowMs);
-          s.texture.needsUpdate = true;
+          // Repaint at the media frame rate instead of the display refresh rate.
+          if (nowMs - s.lastDraw >= MEDIA_INTERVAL) {
+            drawOn(s, nowMs);
+            s.texture.needsUpdate = true;
+            s.lastDraw = nowMs;
+          }
           animating = true;
         }
       });

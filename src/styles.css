@@ -252,8 +252,8 @@ a {
 
 /* ---------- 3D room (progressive enhancement) ---------- */
 
-/* the active clip lives here: in the render tree so it keeps decoding, but
-   tucked behind the canvas. Only the focused computer's video is ever added. */
+/* Video and fallback-image elements stay in the render tree behind the
+   canvas. Only the focused computer's media source is loaded at a time. */
 .gif-bank {
   position: fixed;
   inset: 0;
