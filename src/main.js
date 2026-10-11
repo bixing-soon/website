@@ -264,7 +264,10 @@ function init3D(THREE) {
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('aria-hidden', 'true');
-    v.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+    // Keep it inside the viewport, tucked behind the (opaque) WebGL canvas.
+    // Firefox suspends decoding of videos that are hidden or off-screen, which
+    // would leave the canvas draw blank; an in-viewport element keeps decoding.
+    v.style.cssText = 'position:absolute;top:0;left:0;width:220px;height:auto;';
     if (bank) bank.appendChild(v);
 
     return {
