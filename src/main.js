@@ -17,7 +17,7 @@ function enter3DMode() {
 // so it never blinks past too fast.
 function revealContent() {
   var elapsed = performance.now() - (window.__boot || 0);
-  var wait = Math.max(0, 1000 - elapsed);
+  var wait = window.__skipBoot ? 0 : Math.max(0, 1000 - elapsed);
   window.setTimeout(function () {
     document.documentElement.classList.remove('pending3d');
   }, wait);
@@ -48,14 +48,14 @@ var SCREENS = [
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm',
+    id: 'moments', label: 'Moments', video: '/images/soyo-peek.webm',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'horror', label: '???', video: '/images/soyo-peek.webm',
+    id: 'mutou', label: '???', video: '/images/mutsumi.webm',
     bigText: '睦 SHRINE',
     horror: true,
-    redirect: '/horror/'
+    redirect: '/mutou/'
   }
 ];
 
@@ -957,6 +957,17 @@ function init3D(THREE) {
 
   var focus = 0;
   var focusSmooth = 0;
+
+  // coming back from /mutou/ via its close button lands on the last tower
+  if (window.__startAtCurse) {
+    for (var si = 0; si < SCREENS.length; si++) {
+      if (SCREENS[si].horror) {
+        focus = si;
+        focusSmooth = si;
+        break;
+      }
+    }
+  }
   var dist = NORMAL_DIST;
   var distTarget = NORMAL_DIST;
   var yaw = 0;
@@ -1333,6 +1344,15 @@ function init3D(THREE) {
 /* ---------------- boot ---------------- */
 
 (function maybe3D() {
+  // returning from /mutou/: never play the sakiko-sip boot cutscene
+  if (window.__skipBoot) {
+    var boot = document.querySelector('.boot');
+    if (boot) boot.remove();
+  }
+  // the hash only chooses the initial tower; strip it so a refresh boots normally
+  if (window.__startAtCurse && window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { revealContent(); return; }
   if (!webglAvailable()) { revealContent(); return; }
   import('./vendor/three.module.js')

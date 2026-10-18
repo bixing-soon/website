@@ -11,6 +11,10 @@
 // Decide before first paint whether the 3D scene is coming, so nothing flashes
 // on screen first. main.js removes this class once the scene is up.
 (function () {
+  var skipBoot = window.location.hash === '#curse-of-mu';
+  window.__skipBoot = skipBoot;
+  window.__startAtCurse = skipBoot;
+  if (skipBoot) document.documentElement.classList.add('skip-boot');
   try {
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var c = document.createElement('canvas');

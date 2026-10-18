@@ -117,6 +117,16 @@ a {
   z-index: 60;
 }
 
+/* Returning from /mutou/: skip the boot cutscene and use the scene's
+   dark haze so there is no pink flash while the 3D bundle loads. */
+html.skip-boot.pending3d body {
+  background: #40313f;
+}
+
+html.skip-boot.pending3d .boot {
+  display: none;
+}
+
 /* ---------- desktop ---------- */
 
 .scene {
