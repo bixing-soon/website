@@ -3,13 +3,15 @@
   var hint = document.getElementById('key-hint');
   var status = document.getElementById('key-status');
   var scare = document.getElementById('jumpscare');
+  var celebration = document.getElementById('win-celebration');
+  var confetti = document.getElementById('confetti');
   var closeBtn = document.querySelector('.close');
   if (!container) return;
 
   var COUNT = 8;
   var PINK_MS = 1500;
   var SWAP_MS = 480;
-  var SETTLE_MS = 260;
+  var SETTLE_MS = 450;
   var ROTATIONS = 5;
   var HAPPI_KEY = 'mutou:happi-mu';
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -48,7 +50,7 @@
     if (window.location.hash !== '#happi-mu' && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#happi-mu');
     }
-    hint.textContent = 'challenge cleared.';
+    hint.classList.add('is-hidden');
     status.textContent = '#happi-mu';
     status.classList.add('is-happi');
     if (closeBtn) closeBtn.classList.remove('is-hidden');
@@ -71,7 +73,6 @@
   var rotating = false;
   var raf = 0;
   var last = 0;
-  var wonKey = null;
 
   function slotList() {
     return window.innerWidth < 760 ? NARROW : WIDE;
@@ -170,8 +171,8 @@
     target.el.classList.remove('is-pink');
 
     if (reduced) {
+      hint.classList.add('is-hidden');
       playable = true;
-      hint.textContent = 'which one was pink?';
       return;
     }
 
@@ -180,7 +181,7 @@
 
   function startRotation() {
     rotating = true;
-    hint.textContent = 'follow it.';
+    hint.classList.add('is-hidden');
     last = 0;
     window.cancelAnimationFrame(raf);
     raf = window.requestAnimationFrame(frame);
@@ -190,7 +191,7 @@
       assignSlots();
       round++;
       if (round >= ROTATIONS) {
-        window.setTimeout(finishRotation, SETTLE_MS);
+        beginSettle();
       } else {
         window.setTimeout(step, SWAP_MS);
       }
@@ -216,32 +217,25 @@
     if (rotating) raf = window.requestAnimationFrame(frame);
   }
 
-  function finishRotation() {
-    rotating = false;
+  // let the fifth move finish as a smooth glide instead of a snap
+  function beginSettle() {
     window.cancelAnimationFrame(raf);
     keys.forEach(function (k) {
+      k.el.style.transition = 'transform ' + SETTLE_MS + 'ms cubic-bezier(0.2, 0.8, 0.2, 1)';
       k.x = k.tx;
       k.y = k.ty;
-      k.rot = 0;
       paint(k);
     });
-    playable = true;
-    hint.textContent = 'which one was pink?';
-  }
 
-  function centerWon() {
-    if (!wonKey) return;
-    var x = (window.innerWidth - wonKey.w) / 2;
-    var y = (window.innerHeight - wonKey.h) / 2;
-    wonKey.el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) rotate(0deg) scale(1.35)';
+    window.setTimeout(function () {
+      keys.forEach(function (k) { k.el.style.transition = ''; });
+      rotating = false;
+      playable = true;
+    }, SETTLE_MS + 20);
   }
 
   window.addEventListener('resize', function () {
     layout();
-    if (wonKey) {
-      centerWon();
-      return;
-    }
     if (!rotating) {
       keys.forEach(function (k) {
         k.x = k.tx;
@@ -251,28 +245,51 @@
     }
   });
 
+  function celebrate() {
+    if (!celebration || !confetti) return;
+    confetti.textContent = '';
+
+    if (!reduced) {
+      var colors = ['#ff5fa2', '#e9c46a', '#c40d23', '#f4e4f0', '#ff8aa8'];
+      var count = window.innerWidth < 760 ? 60 : 100;
+
+      for (var n = 0; n < count; n++) {
+        var p = document.createElement('i');
+        p.style.left = (Math.random() * 100) + 'vw';
+        p.style.background = colors[(Math.random() * colors.length) | 0];
+        p.style.width = (4 + Math.random() * 7) + 'px';
+        p.style.height = (8 + Math.random() * 10) + 'px';
+        p.style.borderRadius = Math.random() < 0.35 ? '50%' : '1px';
+        p.style.setProperty('--drift', ((Math.random() - 0.5) * 36) + 'vw');
+        p.style.animationDelay = (-Math.random() * 0.9) + 's';
+        p.style.animationDuration = (0.9 + Math.random() * 0.5) + 's';
+        confetti.appendChild(p);
+      }
+    }
+
+    celebration.classList.add('is-live');
+    window.setTimeout(function () {
+      celebration.classList.remove('is-live');
+      confetti.textContent = '';
+    }, 3000);
+  }
+
   function win(k) {
     locked = true;
     rotating = false;
-    wonKey = k;
     window.cancelAnimationFrame(raf);
     keys.forEach(function (other) {
-      if (other !== k) other.el.classList.add('is-gone');
+      other.el.classList.add('is-gone');
     });
-    k.el.classList.add('is-correct');
+    k.el.classList.add('is-correct', 'is-gone');
 
-    // snap the remembered key into the middle as the payoff
-    if (!reduced) {
-      k.el.style.transition = 'transform 0.65s cubic-bezier(0.2, 0.9, 0.25, 1)';
-    }
-    centerWon();
+    celebrate();
 
     try { window.sessionStorage.setItem(HAPPI_KEY, '1'); } catch (e) { /* ignore */ }
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#happi-mu');
     }
 
-    hint.textContent = 'challenge cleared.';
     status.textContent = '#happi-mu';
     status.classList.add('is-happi');
     if (closeBtn) closeBtn.classList.remove('is-hidden');
@@ -282,12 +299,14 @@
     locked = true;
     rotating = false;
     window.cancelAnimationFrame(raf);
-    hint.textContent = '';
     status.textContent = '';
     if (scare) scare.classList.add('is-live');
     window.setTimeout(function () {
+      if (scare) scare.classList.add('is-bloodied');
+    }, 500);
+    window.setTimeout(function () {
       window.location.href = '/#curse-of-mu';
-    }, 900);
+    }, 1500);
   }
 
   container.addEventListener('click', function (e) {
