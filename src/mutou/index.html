@@ -10,8 +10,17 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<svg class="key-defs" aria-hidden="true" focusable="false">
+  <symbol id="key-icon" viewBox="0 0 32 92">
+    <path fill="currentColor" fill-rule="evenodd" d="M16 4a11 11 0 0 1 0 22 11 11 0 0 1 0-22Zm0 5.5a5.5 5.5 0 0 0 0 11 5.5 5.5 0 0 0 0-11ZM12.5 26h7v57h-7ZM19.5 70h8v6h-8ZM19.5 82h6v6h-6Z"></path>
+    <circle cx="16" cy="4" r="2.4" fill="currentColor"></circle>
+    <circle cx="5" cy="15" r="2.4" fill="currentColor"></circle>
+    <circle cx="27" cy="15" r="2.4" fill="currentColor"></circle>
+  </symbol>
+</svg>
+
 <main class="shrine" id="main">
-  <a class="close" href="/#curse-of-mu" aria-label="Close and return to the last tower">&times;</a>
+  <a class="close is-hidden" href="/#curse-of-mu" aria-label="Close and return to the last tower">&times;</a>
 
   <h1 class="shrine-title">睦 SHRINE</h1>
 
@@ -62,6 +71,16 @@
 
   <div class="glitch" aria-hidden="true"></div>
   <div class="scanlines" aria-hidden="true"></div>
+
+  <div class="keys" id="keys" aria-label="Key game"></div>
+  <p class="key-hint" id="key-hint">watch the pink key.</p>
+  <p class="key-status" id="key-status" role="status" aria-live="polite"></p>
 </main>
+
+<div class="jumpscare" id="jumpscare" aria-hidden="true">
+  <img src="/images/mutsumi-smile.webp" alt="">
+</div>
+
+<script src="keys.js"></script>
 </body>
 </html>
