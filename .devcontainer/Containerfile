@@ -1,5 +1,6 @@
 FROM quay.io/fedora/fedora:44
 RUN dnf install -y nodejs npm git git-filter-repo dnf-plugins-core vim python3-pip age openssh procps-ng rclone
+# u may install ffmpeg but i excluded it from here cuz it is a huge package
 RUN dnf config-manager addrepo --from-repofile=https://rpm.releases.hashicorp.com/fedora/hashicorp.repo && \
     dnf install -y terraform
 ENV SSH_AUTH_SOCK="/.ssh-agent.sock"

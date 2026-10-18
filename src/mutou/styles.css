@@ -74,6 +74,10 @@ body {
   background: rgba(196, 13, 35, 0.25);
 }
 
+.close.is-hidden {
+  display: none;
+}
+
 /* the same oversized red sign as the tower screen */
 .shrine-title {
   position: relative;
@@ -139,6 +143,153 @@ body {
     rgba(0, 0, 0, 0.5) 0 2px,
     transparent 2px 5px
   );
+}
+
+/* ---------- key game ---------- */
+
+.key-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.keys {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.key {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(56px, 8vw, 104px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #e9c46a;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.key.is-pink {
+  z-index: 2;
+  color: #ff5fa2;
+  filter: drop-shadow(0 0 28px rgba(255, 95, 162, 0.85));
+}
+
+.key.is-correct {
+  z-index: 2;
+  color: #ff5fa2;
+  filter: drop-shadow(0 0 18px rgba(255, 95, 162, 0.9));
+}
+
+.key.is-gone {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.key:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
+}
+
+.key-hint,
+.key-status {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 7;
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.key-hint {
+  bottom: 2.4rem;
+  color: #a89196;
+}
+
+.key-status {
+  bottom: 1.4rem;
+  color: #ff8aa8;
+}
+
+.key-status.is-happi {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(255, 95, 162, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 95, 162, 0.08);
+  color: #ff5fa2;
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 18px rgba(255, 95, 162, 0.85);
+}
+
+/* ---------- jumpscare ---------- */
+
+.jumpscare {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  visibility: hidden;
+  background: #060508;
+  pointer-events: none;
+}
+
+.jumpscare.is-live {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* 1:1 source fitted inside the viewport: portrait scales to the width,
+   landscape to the height, with the full image always visible */
+.jumpscare img {
+  width: 100vmin;
+  height: 100vmin;
+  max-width: none;
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(0.05);
+  will-change: transform;
+}
+
+.jumpscare.is-live img {
+  animation: scare 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+}
+
+@keyframes scare {
+  from {
+    transform: scale(0.05);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 /* heavy vignette, matching the canvas */
