@@ -17,7 +17,7 @@ function enter3DMode() {
 // so it never blinks past too fast.
 function revealContent() {
   var elapsed = performance.now() - (window.__boot || 0);
-  var wait = Math.max(0, 1000 - elapsed);
+  var wait = window.__skipBoot ? 0 : Math.max(0, 1000 - elapsed);
   window.setTimeout(function () {
     document.documentElement.classList.remove('pending3d');
   }, wait);
@@ -48,12 +48,14 @@ var SCREENS = [
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'moments', label: 'Moments', video: '/images/uika-throws-mutsumi.webm',
+    id: 'moments', label: 'Moments', video: '/images/soyo-peek.webm',
     heading: 'PLACEHOLDER'
   },
   {
-    id: 'links', label: 'Links', video: '/images/soyo-peek.webm',
-    heading: 'PLACEHOLDER'
+    id: 'mutou', label: '???', video: '/images/mutsumi.webm',
+    bigText: '睦 SHRINE',
+    horror: true,
+    redirect: '/mutou/'
   }
 ];
 
@@ -348,7 +350,13 @@ function init3D(THREE) {
   function drawOn(state, now) {
     var ctx = state.ctx;
     drawOffBase(state);
-    drawImageCover(state, now);
+    if (state.mode === 'noise') {
+      ctx.globalAlpha = 0.4;
+      drawNoise(ctx);
+      ctx.globalAlpha = 1;
+    } else {
+      drawImageCover(state, now);
+    }
     drawScanlines(ctx, 0.07);
   }
 
@@ -376,13 +384,61 @@ function init3D(THREE) {
     ctx.arcTo(rx + rw, ry, rx + rw, ry + rh, r);
     ctx.arcTo(rx + rw, ry + rh, rx, ry + rh, r);
     ctx.arcTo(rx, ry + rh, rx, ry, r);
-    ctx.arcTo(rx, ry, rx + rw, ry, r);
+    ctx.arcTo(rx, ry, rx + r, ry, r);
     ctx.closePath();
   }
 
+  // A deterministic cracked-glass overlay: a few impact points, each throwing
+  // jagged branches across the page. Drawn into the page texture once.
+  function drawCracks(ctx, W, H, seed) {
+    var s = seed || 1;
+    function rnd() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }
+
+    function branch(x, y, angle, length, width, depth) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      var steps = 6 + (rnd() * 6 | 0);
+      for (var i = 0; i < steps; i++) {
+        angle += (rnd() - 0.5) * 0.6;
+        x += Math.cos(angle) * (length / steps);
+        y += Math.sin(angle) * (length / steps);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(4,2,6,0.9)';
+      ctx.lineWidth = width;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,235,245,0.16)';
+      ctx.lineWidth = Math.max(1, width * 0.4);
+      ctx.stroke();
+
+      if (depth > 0) {
+        var forks = 2 + (rnd() * 3 | 0);
+        for (var f = 0; f < forks; f++) {
+          branch(x, y, angle + (rnd() - 0.5) * 2.2, length * (0.35 + rnd() * 0.3),
+            Math.max(1, width * 0.65), depth - 1);
+        }
+      }
+    }
+
+    var hits = 3 + (rnd() * 2 | 0);
+    for (var h = 0; h < hits; h++) {
+      var ox = W * (0.18 + rnd() * 0.64);
+      var oy = H * (0.14 + rnd() * 0.72);
+      var spokes = 5 + (rnd() * 4 | 0);
+      for (var k = 0; k < spokes; k++) {
+        branch(ox, oy, rnd() * Math.PI * 2, 90 + rnd() * 190, 3, 2);
+      }
+      ctx.beginPath();
+      ctx.arc(ox, oy, 5 + rnd() * 7, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,235,245,0.10)';
+      ctx.fill();
+    }
+  }
+
   // the pink circular close (X) button, top-right of every page
-  function drawCloseButton(ctx, cx, cy, r) {
-    ctx.fillStyle = '#ef94bd';
+  function drawCloseButton(ctx, cx, cy, r, color) {
+    ctx.fillStyle = color || '#ef94bd';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -448,56 +504,107 @@ function init3D(THREE) {
     var H = PAGE_H;
     var PAD = 62;
     var CW = W - PAD * 2;
+    var horror = !!def.horror;
 
     var grad = x.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#2b2130');
-    grad.addColorStop(1, '#382c3e');
+    if (horror) {
+      grad.addColorStop(0, '#0b080c');
+      grad.addColorStop(1, '#171015');
+    } else {
+      grad.addColorStop(0, '#2b2130');
+      grad.addColorStop(1, '#382c3e');
+    }
     x.fillStyle = grad;
     x.fillRect(0, 0, W, H);
 
     var glow = x.createRadialGradient(W * 0.5, 0, 8, W * 0.5, 0, H);
-    glow.addColorStop(0, 'rgba(239,148,189,0.14)');
-    glow.addColorStop(1, 'rgba(239,148,189,0)');
+    if (horror) {
+      glow.addColorStop(0, 'rgba(168,28,44,0.18)');
+      glow.addColorStop(1, 'rgba(168,28,44,0)');
+    } else {
+      glow.addColorStop(0, 'rgba(239,148,189,0.14)');
+      glow.addColorStop(1, 'rgba(239,148,189,0)');
+    }
     x.fillStyle = glow;
     x.fillRect(0, 0, W, H);
 
+    if (horror) {
+      // the whole page is one enormous red sign; no chrome, no copy
+      x.textAlign = 'center';
+      x.textBaseline = 'middle';
+      x.font = '900 100px ' + FONT;
+      var label = def.bigText || '睦 SHRINE';
+      var metrics = x.measureText(label);
+      var scale = Math.min((W * 0.96) / Math.max(1, metrics.width), 3.2);
+      x.save();
+      x.translate(W / 2, H / 2);
+      x.scale(scale, scale * 1.55);
+      x.fillStyle = '#c40d23';
+      x.shadowColor = 'rgba(150,0,18,0.9)';
+      x.shadowBlur = 30;
+      x.fillText(label, 0, 0);
+      x.restore();
+      x.shadowBlur = 0;
+
+      // corrupted scan bands: shift a few slices of the sign sideways
+      var gs = 2026;
+      function grnd() { gs = (gs * 1103515245 + 12345) & 0x7fffffff; return gs / 0x7fffffff; }
+      for (var b = 0; b < 6; b++) {
+        var by = grnd() * H;
+        var bh = 2 + grnd() * 14;
+        var dx = (grnd() - 0.5) * 46;
+        x.drawImage(c, 0, by, W, bh, dx, by, W, bh);
+        x.fillStyle = 'rgba(150,214,255,0.06)';
+        x.fillRect(0, by, W, 1);
+      }
+
+      // glass fractures over everything, then a heavy vignette
+      drawCracks(x, W, H, 0x51c4a7);
+      var vign = x.createRadialGradient(W * 0.5, H * 0.5, H * 0.2, W * 0.5, H * 0.5, H * 0.78);
+      vign.addColorStop(0, 'rgba(0,0,0,0)');
+      vign.addColorStop(1, 'rgba(0,0,0,0.55)');
+      x.fillStyle = vign;
+      x.fillRect(0, 0, W, H);
+      return;
+    }
+
     // title bar
-    x.fillStyle = '#4c3e53';
+    x.fillStyle = horror ? '#1c1218' : '#4c3e53';
     x.fillRect(0, 0, W, 84);
     x.fillStyle = 'rgba(0,0,0,0.22)';
     x.fillRect(0, 82, W, 2);
 
-    x.fillStyle = '#ef94bd';
+    x.fillStyle = horror ? '#8f1f2b' : '#ef94bd';
     x.beginPath();
     x.arc(48, 42, 12, 0, Math.PI * 2);
     x.fill();
 
-    x.fillStyle = '#ead6e6';
+    x.fillStyle = horror ? '#cbb8bd' : '#ead6e6';
     x.font = '700 34px ' + FONT;
     x.textAlign = 'left';
     x.textBaseline = 'middle';
     x.fillText(def.label, 78, 44);
 
-    drawCloseButton(x, W - 56, 42, 26);
+    drawCloseButton(x, W - 56, 42, 26, horror ? '#8f1f2b' : '#ef94bd');
 
     // content column
     x.textAlign = 'left';
     x.textBaseline = 'top';
     var y = 122;
 
-    x.fillStyle = '#f4e4f0';
+    x.fillStyle = horror ? '#e6dadd' : '#f4e4f0';
     x.font = '700 56px ' + FONT;
     x.fillText(def.heading, PAD, y);
     y += 62;
 
     if (def.sub) {
-      x.fillStyle = '#b6a0ba';
+      x.fillStyle = horror ? '#8b6f75' : '#b6a0ba';
       x.font = '400 28px ' + FONT;
       x.fillText(def.sub, PAD, y);
       y += 40;
     }
 
-    x.strokeStyle = 'rgba(239,148,189,0.28)';
+    x.strokeStyle = horror ? 'rgba(168,28,44,0.32)' : 'rgba(239,148,189,0.28)';
     x.lineWidth = 2;
     x.beginPath();
     x.moveTo(PAD, y + 10);
@@ -506,7 +613,7 @@ function init3D(THREE) {
     y += 34;
 
     (def.paras || []).forEach(function (p) {
-      x.fillStyle = '#cdb9d0';
+      x.fillStyle = horror ? '#a28d91' : '#cdb9d0';
       x.font = '400 30px ' + FONT;
       y = wrapText(x, p, PAD, y, CW, 42) + 18;
     });
@@ -657,6 +764,7 @@ function init3D(THREE) {
     content.userData.screenIndex = index;
     content.userData.buttons = contentTex.buttons;
     content.userData.redraw = contentTex.redraw;
+    content.userData.redirect = def.redirect;
     g.add(content);
 
     // a small decorative GIF screen in a corner, tilted in 2D (its own rotation)
@@ -815,9 +923,15 @@ function init3D(THREE) {
     state.gen += 1;
     var gen = state.gen;
     var v = state.video;
-    state.mode = 'video';
     state.loaded = false;
 
+    // screens without a video show plain CRT static instead
+    if (!state.url) {
+      state.mode = 'noise';
+      return;
+    }
+
+    state.mode = 'video';
     v.addEventListener('canplay', function onCanPlay() {
       if (state.gen === gen) state.loaded = true;
     }, { once: true });
@@ -843,6 +957,17 @@ function init3D(THREE) {
 
   var focus = 0;
   var focusSmooth = 0;
+
+  // coming back from /mutou/ via its close button lands on the last tower
+  if (window.__startAtCurse) {
+    for (var si = 0; si < SCREENS.length; si++) {
+      if (SCREENS[si].horror) {
+        focus = si;
+        focusSmooth = si;
+        break;
+      }
+    }
+  }
   var dist = NORMAL_DIST;
   var distTarget = NORMAL_DIST;
   var yaw = 0;
@@ -1064,6 +1189,12 @@ function init3D(THREE) {
     zoomedScreen = hit.mesh;
     document.body.classList.add('in-page'); // hides the orbit HUD
     requestRender();
+
+    // the horror tower swallows the click and takes you through
+    if (hit.mesh.userData.redirect) {
+      var target = hit.mesh.userData.redirect;
+      window.setTimeout(function () { window.location.href = target; }, 800);
+    }
   });
 
   canvas.addEventListener('pointercancel', function () { dragging = false; axis = null; });
@@ -1213,6 +1344,15 @@ function init3D(THREE) {
 /* ---------------- boot ---------------- */
 
 (function maybe3D() {
+  // returning from /mutou/: never play the sakiko-sip boot cutscene
+  if (window.__skipBoot) {
+    var boot = document.querySelector('.boot');
+    if (boot) boot.remove();
+  }
+  // the hash only chooses the initial tower; strip it so a refresh boots normally
+  if (window.__startAtCurse && window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { revealContent(); return; }
   if (!webglAvailable()) { revealContent(); return; }
   import('./vendor/three.module.js')

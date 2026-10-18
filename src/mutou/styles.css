@@ -1,0 +1,152 @@
+:root {
+  color-scheme: dark;
+
+  --bg: #0b080c;
+  --bg-2: #171015;
+  --red: #c40d23;
+  --spark: #96d6ff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--red);
+  font-family: "Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+::selection {
+  background: transparent;
+  color: inherit;
+}
+
+.shrine {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(70rem 45rem at 50% 40%, rgba(168, 28, 44, 0.18), transparent 70%),
+    linear-gradient(var(--bg), var(--bg-2));
+}
+
+/* small close button, top-right, back to the site root */
+.close {
+  position: fixed;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  right: clamp(0.75rem, 2vw, 1.25rem);
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(196, 13, 35, 0.55);
+  border-radius: 50%;
+  background: rgba(11, 8, 12, 0.55);
+  color: #e8b4bb;
+  font: 400 1.4rem/1 system-ui, sans-serif;
+  text-decoration: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.close:hover,
+.close:focus-visible {
+  color: #ffffff;
+  border-color: var(--red);
+  background: rgba(196, 13, 35, 0.25);
+}
+
+/* the same oversized red sign as the tower screen */
+.shrine-title {
+  position: relative;
+  z-index: 0;
+  margin: 0;
+  font-size: clamp(3.25rem, 18.5vw, 18rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--red);
+  text-shadow: 0 0 30px rgba(150, 0, 18, 0.9);
+  transform: scaleY(1.55);
+}
+
+/* ---------- cracked glass ---------- */
+
+.cracks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.crack-shadow {
+  stroke: #000;
+  stroke-width: 7;
+}
+
+.crack-light {
+  stroke: rgba(235, 244, 255, 0.18);
+  stroke-width: 1.4;
+}
+
+.crack-impact {
+  fill: rgba(235, 244, 255, 0.06);
+}
+
+/* ---------- corrupted scan bands ---------- */
+
+.glitch {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(transparent 18%, rgba(150, 214, 255, 0.05) 18.4%, transparent 19%),
+    linear-gradient(transparent 63%, rgba(150, 214, 255, 0.04) 63.3%, transparent 64%),
+    linear-gradient(transparent 81%, rgba(150, 214, 255, 0.06) 81.4%, transparent 82%);
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0 2px,
+    transparent 2px 5px
+  );
+}
+
+/* heavy vignette, matching the canvas */
+.shrine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.6) 100%);
+}
