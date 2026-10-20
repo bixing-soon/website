@@ -27,10 +27,11 @@ function revealContent() {
 
 // Each billboard is its own little page: a title bar, a heading, some body,
 // and optionally a spec/link list or tag chips. `label` is the window title,
-// `sub` a muted subtitle under the heading.
+// `sub` a muted subtitle under the heading. `headingColor` overrides the
+// heading colour, and `logo` draws a centred mark instead of the usual copy.
 var SCREENS = [
   {
-    id: 'welcome', label: 'Welcome', video: '/images/anon-heart.webm',
+    id: 'welcome', label: 'Welcome', video: '/images/tomori-GUGUGAGA.webm',
     heading: 'Hiya, I\u2019m bixing.',
     sub: 'welcome to my corner of the internet',
     paras: [
@@ -42,8 +43,10 @@ var SCREENS = [
     textLink: { label: 'Source Code', url: 'https://github.com/bixing-soon/website' }
   },
   {
-    id: 'setup', label: 'Setup', video: '/images/tomori-GUGUGAGA.webm',
-    heading: 'PLACEHOLDER'
+    id: 'anon-tokyo', label: 'ANON TOKYO', video: '/images/anon-heart.webm',
+    heading: 'ANON TOKYO', wordmark: ['Anon', 'Tokyo'],
+    headingColor: '#f7b6d2', logo: 'guitar',
+    redirect: '/anon-tokyo/'
   },
   {
     id: 'moments', label: 'Moments', video: '/images/soyo-peek.webm',
@@ -434,6 +437,100 @@ function init3D(THREE) {
     }
   }
 
+  // The Anon Tokyo mark: a pink guitar, built from 64x64 SVG-style paths and
+  // drawn into the page canvas so it stays sharp when the screen is zoomed.
+  var guitarPaths = null;
+  function guitarMark() {
+    if (guitarPaths) return guitarPaths;
+    guitarPaths = {
+      head: new Path2D('M28.4 3.1h7.2c.9 0 1.6.7 1.6 1.6v6.9c0 .9-.7 1.6-1.6 1.6h-7.2c-.9 0-1.6-.7-1.6-1.6V4.7c0-.9.7-1.6 1.6-1.6Z'),
+      neck: new Path2D('M29.5 11.5h5v21.3h-5z'),
+      body: new Path2D('M32 31.8c-1.9 0-3.4 1.2-3.4 2.7v3.4c-3 .5-5.5 1.8-7.2 3.7-1.6 1.8-2.5 4.1-2.5 6.6 0 2.7 1 5.1 2.7 6.9 2.3 2.4 5.9 3.8 10.4 3.8s8.1-1.4 10.4-3.8c1.7-1.8 2.7-4.2 2.7-6.9 0-2.5-.9-4.8-2.5-6.6-1.7-1.9-4.2-3.2-7.2-3.7v-3.4c0-1.5-1.5-2.7-3.4-2.7Z')
+    };
+    return guitarPaths;
+  }
+
+  function drawGuitar(ctx, cx, cy, size, color) {
+    var paths = guitarMark();
+    var s = size / 64;
+    var ink = 'rgba(43,33,48,0.82)';
+    ctx.save();
+    ctx.translate(cx - size / 2, cy - size / 2);
+    ctx.scale(s, s);
+    ctx.fillStyle = color;
+    ctx.fill(paths.head);
+    ctx.fill(paths.neck);
+    ctx.fill(paths.body);
+
+    // strings and frets
+    ctx.strokeStyle = ink;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 0.9;
+    for (var i = 0; i < 3; i++) {
+      var sx = 30.8 + i * 1.2;
+      ctx.beginPath();
+      ctx.moveTo(sx, 5.2);
+      ctx.lineTo(sx, 51.5);
+      ctx.stroke();
+    }
+    ctx.lineWidth = 1.1;
+    [15, 18.5, 22, 25.5, 29, 32.5].forEach(function (fy) {
+      ctx.beginPath();
+      ctx.moveTo(29.5, fy);
+      ctx.lineTo(34.5, fy);
+      ctx.stroke();
+    });
+
+    // sound hole and bridge
+    ctx.fillStyle = ink;
+    ctx.beginPath();
+    ctx.arc(32, 45, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(27.8, 51, 8.4, 1.7);
+
+    // tuning pegs
+    ctx.fillStyle = color;
+    [[26.7, 6.1], [26.7, 9.2], [37.3, 6.1], [37.3, 9.2]].forEach(function (peg) {
+      ctx.beginPath();
+      ctx.arc(peg[0], peg[1], 1.15, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  // The ANON TOKYO wordmark is calligraphic, not a UI sans. The display face is
+  // self-hosted from src/fonts (SIL OFL) and awaited before textures are painted
+  // (see maybe3D); the rest of the stack is a graceful local fallback.
+  var SCRIPT = '"Anon Script", "Great Vibes", "Snell Roundhand", "Segoe Script", "Brush Script MT", cursive';
+
+  function scriptMetrics(ctx, word, size) {
+    ctx.font = '400 ' + size + 'px ' + SCRIPT;
+    var m = ctx.measureText(word);
+    return {
+      width: m.width,
+      asc: m.actualBoundingBoxAscent || size * 0.78,
+      desc: m.actualBoundingBoxDescent || size * 0.3
+    };
+  }
+
+  function drawScriptWord(ctx, word, cx, baseline, size, fill, edge, glow) {
+    ctx.font = '400 ' + size + 'px ' + SCRIPT;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = fill;
+    if (glow) {
+      ctx.shadowColor = glow;
+      ctx.shadowBlur = size * 0.14;
+    }
+    ctx.fillText(word, cx, baseline);
+    ctx.shadowBlur = 0;
+    if (edge) {
+      ctx.strokeStyle = edge;
+      ctx.lineWidth = Math.max(1, size * 0.016);
+      ctx.strokeText(word, cx, baseline);
+    }
+  }
+
   // draws a page-like screen: window bar, heading, subtitle, body, rows, chips,
   // a hover-highlighted icon row, and a text link. Returns a redrawable texture.
   function contentTexture(def) {
@@ -513,6 +610,51 @@ function init3D(THREE) {
       return;
     }
 
+    if (def.logo === 'guitar') {
+      // full-bleed poster: no window chrome, just the script wordmark
+      var accent = def.headingColor || '#f7b6d2';
+      var words = def.wordmark || def.heading.split(/\s+/);
+      var probe = 100;
+      var widest = 0;
+      var asc = 0;
+      var desc = 0;
+      words.forEach(function (w) {
+        var m = scriptMetrics(x, w, probe);
+        widest = Math.max(widest, m.width);
+        asc = Math.max(asc, m.asc);
+        desc = Math.max(desc, m.desc);
+      });
+
+      // fit the biggest line to 90% of the width, and the stack to 86% of the
+      // height, so the swashes never clip off the page
+      var gapUnit = 0.94;
+      var widthFit = (W * 0.9 * probe) / Math.max(1, widest);
+      var heightFit = (H * 0.86) / ((asc + desc) / probe + gapUnit * (words.length - 1));
+      var size = Math.min(360, widthFit, heightFit);
+      var gap = size * gapUnit;
+
+      var blockH = ((asc + desc) * size) / probe + gap * (words.length - 1);
+      var top = H * 0.48 - blockH / 2;
+      var firstBaseline = top + (asc * size) / probe;
+
+      var ink = x.createLinearGradient(0, top, 0, top + blockH);
+      ink.addColorStop(0, '#ffe4f0');
+      ink.addColorStop(0.55, accent);
+      ink.addColorStop(1, '#d98cb4');
+
+      words.forEach(function (w, i) {
+        drawScriptWord(x, w, W / 2, firstBaseline + i * gap, size, ink,
+          'rgba(199,104,145,0.5)', 'rgba(247,182,210,0.4)');
+      });
+
+      // the mark sits quietly in the corner
+      x.save();
+      x.globalAlpha = 0.85;
+      drawGuitar(x, 92, 96, 88, accent);
+      x.restore();
+      return;
+    }
+
     // title bar
     x.fillStyle = horror ? '#1c1218' : '#4c3e53';
     x.fillRect(0, 0, W, 84);
@@ -537,7 +679,7 @@ function init3D(THREE) {
     x.textBaseline = 'top';
     var y = 122;
 
-    x.fillStyle = horror ? '#e6dadd' : '#f4e4f0';
+    x.fillStyle = def.headingColor || (horror ? '#e6dadd' : '#f4e4f0');
     x.font = '700 56px ' + FONT;
     x.fillText(def.heading, PAD, y);
     y += 62;
@@ -903,10 +1045,10 @@ function init3D(THREE) {
   var focus = 0;
   var focusSmooth = 0;
 
-  // coming back from /mutou/ via its close button lands on the last tower
-  if (window.__startAtCurse) {
+  // coming back from a sub-page via its close button lands on the tower it came from
+  if (window.__startTower) {
     for (var si = 0; si < SCREENS.length; si++) {
-      if (SCREENS[si].horror) {
+      if (SCREENS[si].id === window.__startTower) {
         focus = si;
         focusSmooth = si;
         break;
@@ -1135,7 +1277,7 @@ function init3D(THREE) {
     document.body.classList.add('in-page'); // hides the orbit HUD
     requestRender();
 
-    // the horror tower swallows the click and takes you through
+    // towers with a redirect hand the click off to their sub-page
     if (hit.mesh.userData.redirect) {
       var target = hit.mesh.userData.redirect;
       window.setTimeout(function () { window.location.href = target; }, 800);
@@ -1288,22 +1430,30 @@ function init3D(THREE) {
 
 /* ---------------- boot ---------------- */
 
+// The wordmark face is only used by the page textures, so ask the browser to
+// fetch it up front and wait for it before painting (otherwise the first paint
+// would silently fall back to another font).
+function loadWordmarkFont() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  return document.fonts.load('400 100px "Anon Script"').catch(function () {});
+}
+
 (function maybe3D() {
-  // returning from /mutou/: never play the sakiko-sip boot cutscene
+  // returning from a sub-page: never play the sakiko-sip boot cutscene
   if (window.__skipBoot) {
     var boot = document.querySelector('.boot');
     if (boot) boot.remove();
   }
   // the hash only chooses the initial tower; strip it so a refresh boots normally
-  if (window.__startAtCurse && window.history && window.history.replaceState) {
+  if (window.__startTower && window.history && window.history.replaceState) {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { revealContent(); return; }
   if (!webglAvailable()) { revealContent(); return; }
   import('./vendor/three.module.js')
     .then(function (THREE) {
-      // load local icon images first so the page textures draw with them
-      return preloadIcons().then(function () { return THREE; });
+      // load the local fonts and icon images first so page textures draw right
+      return Promise.all([preloadIcons(), loadWordmarkFont()]).then(function () { return THREE; });
     })
     .then(function (THREE) {
       try {

@@ -1,3 +1,13 @@
+/* Self-hosted calligraphic face used by the ANON TOKYO billboard.
+   Great Vibes, SIL Open Font License 1.1 (see fonts/OFL.txt). */
+@font-face {
+  font-family: "Anon Script";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/great-vibes-latin.woff2") format("woff2");
+}
+
 :root {
   color-scheme: light;
 
