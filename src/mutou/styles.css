@@ -46,6 +46,40 @@ body {
     linear-gradient(var(--bg), var(--bg-2));
 }
 
+.mutsumi-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.mutsumi-bg.is-visible {
+  opacity: 1;
+}
+
+/* already-cleared visits should never flash the challenge UI */
+html.is-cleared .key-hint {
+  display: none;
+}
+
+html.is-cleared .mutsumi-bg {
+  opacity: 1;
+  transition: none;
+}
+
+html.is-cleared .shrine-title {
+  visibility: hidden;
+}
+
+html.is-cleared .close {
+  display: grid;
+}
+
 /* small close button, top-right, back to the site root */
 .close {
   position: fixed;
@@ -91,32 +125,6 @@ body {
   color: var(--red);
   text-shadow: 0 0 30px rgba(150, 0, 18, 0.9);
   transform: scaleY(1.55);
-}
-
-/* ---------- cracked glass ---------- */
-
-.cracks {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.9;
-}
-
-.crack-shadow {
-  stroke: #000;
-  stroke-width: 7;
-}
-
-.crack-light {
-  stroke: rgba(235, 244, 255, 0.18);
-  stroke-width: 1.4;
-}
-
-.crack-impact {
-  fill: rgba(235, 244, 255, 0.06);
 }
 
 /* ---------- corrupted scan bands ---------- */
@@ -207,36 +215,27 @@ body {
   outline-offset: 6px;
 }
 
-.key-hint,
-.key-status {
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 7;
-  margin: 0;
-  text-align: center;
-  font-size: 0.82rem;
-  letter-spacing: 0.12em;
-  text-transform: lowercase;
-  pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 .key-hint {
+  position: fixed;
   top: 50%;
   left: 50%;
   right: auto;
   bottom: auto;
+  z-index: 7;
   width: min(92vw, 70rem);
+  margin: 0;
   transform: translate(-50%, -50%);
-  color: #ff2f4f;
+  text-align: center;
   font-size: clamp(1.6rem, 6.5vw, 4.5rem);
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: #ff2f4f;
   text-shadow: 0 0 30px rgba(255, 0, 40, 0.8);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
   animation: key-prompt 0.6s steps(1) infinite;
 }
 
@@ -253,25 +252,6 @@ body {
   100% {
     opacity: 0.08;
   }
-}
-
-.key-status {
-  bottom: 1.4rem;
-  color: #ff8aa8;
-}
-
-.key-status.is-happi {
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  padding: 0.35rem 0.85rem;
-  border: 1px solid rgba(255, 95, 162, 0.5);
-  border-radius: 999px;
-  background: rgba(255, 95, 162, 0.08);
-  color: #ff5fa2;
-  font-size: 0.95rem;
-  letter-spacing: 0.18em;
-  text-shadow: 0 0 18px rgba(255, 95, 162, 0.85);
 }
 
 /* ---------- jumpscare ---------- */
@@ -333,88 +313,6 @@ body {
   }
 }
 
-/* ---------- win celebration ---------- */
-
-.win-celebration {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  display: none;
-  place-items: center;
-  overflow: hidden;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(11, 8, 12, 0.2), rgba(11, 8, 12, 0.7));
-}
-
-.win-celebration.is-live {
-  display: grid;
-}
-
-.confetti {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.confetti i {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  animation: confetti-fall 1.2s linear infinite;
-  will-change: transform;
-}
-
-@keyframes confetti-fall {
-  from {
-    transform: translate3d(0, -12vh, 0) rotate(0deg);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(var(--drift), 112vh, 0) rotate(720deg);
-    opacity: 0.85;
-  }
-}
-
-.win-message {
-  position: relative;
-  z-index: 1;
-  padding: 1.5rem;
-  text-align: center;
-  animation: win-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
-}
-
-.win-title {
-  margin: 0;
-  font-size: clamp(2.5rem, 9vw, 7rem);
-  font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: #ff5fa2;
-  text-shadow: 0 0 34px rgba(255, 95, 162, 0.8);
-}
-
-.win-sub {
-  margin: 0.6rem 0 0;
-  font-size: clamp(0.95rem, 2.4vw, 1.5rem);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #e9c46a;
-}
-
-@keyframes win-pop {
-  from {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 /* heavy vignette, matching the canvas */
 .shrine::after {
   content: "";
@@ -428,13 +326,5 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .key-hint {
     animation: none;
-  }
-
-  .win-message {
-    animation: none;
-  }
-
-  .confetti i {
-    display: none;
   }
 }

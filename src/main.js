@@ -384,54 +384,6 @@ function init3D(THREE) {
     ctx.closePath();
   }
 
-  // A deterministic cracked-glass overlay: a few impact points, each throwing
-  // jagged branches across the page. Drawn into the page texture once.
-  function drawCracks(ctx, W, H, seed) {
-    var s = seed || 1;
-    function rnd() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }
-
-    function branch(x, y, angle, length, width, depth) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      var steps = 6 + (rnd() * 6 | 0);
-      for (var i = 0; i < steps; i++) {
-        angle += (rnd() - 0.5) * 0.6;
-        x += Math.cos(angle) * (length / steps);
-        y += Math.sin(angle) * (length / steps);
-        ctx.lineTo(x, y);
-      }
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(4,2,6,0.9)';
-      ctx.lineWidth = width;
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,235,245,0.16)';
-      ctx.lineWidth = Math.max(1, width * 0.4);
-      ctx.stroke();
-
-      if (depth > 0) {
-        var forks = 2 + (rnd() * 3 | 0);
-        for (var f = 0; f < forks; f++) {
-          branch(x, y, angle + (rnd() - 0.5) * 2.2, length * (0.35 + rnd() * 0.3),
-            Math.max(1, width * 0.65), depth - 1);
-        }
-      }
-    }
-
-    var hits = 3 + (rnd() * 2 | 0);
-    for (var h = 0; h < hits; h++) {
-      var ox = W * (0.18 + rnd() * 0.64);
-      var oy = H * (0.14 + rnd() * 0.72);
-      var spokes = 5 + (rnd() * 4 | 0);
-      for (var k = 0; k < spokes; k++) {
-        branch(ox, oy, rnd() * Math.PI * 2, 90 + rnd() * 190, 3, 2);
-      }
-      ctx.beginPath();
-      ctx.arc(ox, oy, 5 + rnd() * 7, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,235,245,0.10)';
-      ctx.fill();
-    }
-  }
-
   // the pink circular close (X) button, top-right of every page
   function drawCloseButton(ctx, cx, cy, r, color) {
     ctx.fillStyle = color || '#ef94bd';
@@ -552,8 +504,7 @@ function init3D(THREE) {
         x.fillRect(0, by, W, 1);
       }
 
-      // glass fractures over everything, then a heavy vignette
-      drawCracks(x, W, H, 0x51c4a7);
+      // heavy vignette
       var vign = x.createRadialGradient(W * 0.5, H * 0.5, H * 0.2, W * 0.5, H * 0.5, H * 0.78);
       vign.addColorStop(0, 'rgba(0,0,0,0)');
       vign.addColorStop(1, 'rgba(0,0,0,0.55)');
