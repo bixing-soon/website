@@ -6,6 +6,16 @@
 <title>睦 SHRINE</title>
 <meta name="theme-color" content="#0b080c">
 <meta name="color-scheme" content="dark">
+<script>
+(function () {
+  try {
+    if (window.location.hash === '#happi-mu' ||
+        window.sessionStorage.getItem('mutou:happi-mu') === '1') {
+      document.documentElement.classList.add('is-cleared');
+    }
+  } catch (e) { /* storage can be unavailable */ }
+})();
+</script>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -20,73 +30,21 @@
 </svg>
 
 <main class="shrine" id="main">
+  <img class="mutsumi-bg" id="mutsumi-bg" src="/images/mutsumi-grim.webp" alt="">
+
   <a class="close is-hidden" href="/#curse-of-mu" aria-label="Close and return to the last tower">&times;</a>
 
   <h1 class="shrine-title">睦 SHRINE</h1>
-
-  <svg class="cracks" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-    <defs>
-      <g id="crack-lines" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M500 470 L432 358 L418 246 L362 142 L351 60"></path>
-        <path d="M500 470 L596 352 L652 254 L760 178 L884 138"></path>
-        <path d="M500 470 L618 520 L736 568 L858 646"></path>
-        <path d="M500 470 L546 600 L584 704 L664 812 L742 880"></path>
-        <path d="M500 470 L430 548 L346 620 L258 742"></path>
-        <path d="M500 470 L352 470 L238 438 L120 456"></path>
-        <path d="M500 470 L638 438 L754 402 L886 412"></path>
-        <path d="M500 470 L514 336 L500 214 L510 92"></path>
-
-        <path d="M432 358 L354 344 L280 300"></path>
-        <path d="M652 254 L738 256 L786 196"></path>
-        <path d="M618 520 L640 622 L714 700"></path>
-        <path d="M430 548 L376 466 L340 404"></path>
-        <path d="M352 470 L338 372 L292 324"></path>
-        <path d="M514 336 L588 288 L610 208"></path>
-        <path d="M584 704 L512 768 L448 744"></path>
-        <path d="M362 142 L284 166 L222 128"></path>
-        <path d="M760 178 L786 96 L842 44"></path>
-        <path d="M346 620 L288 704 L220 736"></path>
-        <path d="M238 438 L180 356 L122 336"></path>
-        <path d="M664 812 L720 920 L740 984"></path>
-        <path d="M258 742 L190 780 L126 776"></path>
-        <path d="M884 138 L930 60"></path>
-
-        <path d="M830 760 L744 690 L662 668 L610 612"></path>
-        <path d="M830 760 L900 686 L954 620 L988 546"></path>
-        <path d="M830 760 L860 850 L906 934"></path>
-        <path d="M830 760 L746 804 L662 860"></path>
-        <path d="M830 760 L900 816 L972 876"></path>
-
-        <path d="M744 690 L716 610 L660 566"></path>
-        <path d="M860 850 L800 880 L760 946"></path>
-        <path d="M746 804 L716 736 L664 716"></path>
-        <path d="M900 816 L930 900"></path>
-      </g>
-    </defs>
-    <use href="#crack-lines" class="crack-shadow"></use>
-    <use href="#crack-lines" class="crack-light"></use>
-    <circle class="crack-impact" cx="500" cy="470" r="10"></circle>
-    <circle class="crack-impact" cx="830" cy="760" r="6"></circle>
-  </svg>
 
   <div class="glitch" aria-hidden="true"></div>
   <div class="scanlines" aria-hidden="true"></div>
 
   <div class="keys" id="keys" aria-label="Key game"></div>
-  <p class="key-hint" id="key-hint">FIND THE PINK KEY</p>
-  <p class="key-status" id="key-status" role="status" aria-live="polite"></p>
+  <p class="key-hint is-hidden" id="key-hint">FIND THE PINK KEY</p>
 </main>
 
 <div class="jumpscare" id="jumpscare" aria-hidden="true">
   <img src="/images/mutsumi-smile.webp" alt="">
-</div>
-
-<div class="win-celebration" id="win-celebration">
-  <div class="confetti" id="confetti" aria-hidden="true"></div>
-  <div class="win-message" role="status" aria-live="polite">
-    <p class="win-title">CONGRATS!!!!!</p>
-    <p class="win-sub">Welcome to Mutsumi&#39;s Shrine</p>
-  </div>
 </div>
 
 <script src="keys.js"></script>

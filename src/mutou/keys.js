@@ -1,10 +1,8 @@
 (function () {
   var container = document.getElementById('keys');
   var hint = document.getElementById('key-hint');
-  var status = document.getElementById('key-status');
   var scare = document.getElementById('jumpscare');
-  var celebration = document.getElementById('win-celebration');
-  var confetti = document.getElementById('confetti');
+  var grimBg = document.getElementById('mutsumi-bg');
   var closeBtn = document.querySelector('.close');
   if (!container) return;
 
@@ -51,11 +49,12 @@
       window.history.replaceState(null, '', '#happi-mu');
     }
     hint.classList.add('is-hidden');
-    status.textContent = '#happi-mu';
-    status.classList.add('is-happi');
+    if (grimBg) grimBg.classList.add('is-visible');
     if (closeBtn) closeBtn.classList.remove('is-hidden');
     return;
   }
+
+  hint.classList.remove('is-hidden');
 
   // mirrored shrine layout: four keys down each side, like the reference art
   var WIDE = [
@@ -245,35 +244,6 @@
     }
   });
 
-  function celebrate() {
-    if (!celebration || !confetti) return;
-    confetti.textContent = '';
-
-    if (!reduced) {
-      var colors = ['#ff5fa2', '#e9c46a', '#c40d23', '#f4e4f0', '#ff8aa8'];
-      var count = window.innerWidth < 760 ? 60 : 100;
-
-      for (var n = 0; n < count; n++) {
-        var p = document.createElement('i');
-        p.style.left = (Math.random() * 100) + 'vw';
-        p.style.background = colors[(Math.random() * colors.length) | 0];
-        p.style.width = (4 + Math.random() * 7) + 'px';
-        p.style.height = (8 + Math.random() * 10) + 'px';
-        p.style.borderRadius = Math.random() < 0.35 ? '50%' : '1px';
-        p.style.setProperty('--drift', ((Math.random() - 0.5) * 36) + 'vw');
-        p.style.animationDelay = (-Math.random() * 0.9) + 's';
-        p.style.animationDuration = (0.9 + Math.random() * 0.5) + 's';
-        confetti.appendChild(p);
-      }
-    }
-
-    celebration.classList.add('is-live');
-    window.setTimeout(function () {
-      celebration.classList.remove('is-live');
-      confetti.textContent = '';
-    }, 3000);
-  }
-
   function win(k) {
     locked = true;
     rotating = false;
@@ -283,15 +253,13 @@
     });
     k.el.classList.add('is-correct', 'is-gone');
 
-    celebrate();
+    if (grimBg) grimBg.classList.add('is-visible');
 
     try { window.sessionStorage.setItem(HAPPI_KEY, '1'); } catch (e) { /* ignore */ }
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#happi-mu');
     }
 
-    status.textContent = '#happi-mu';
-    status.classList.add('is-happi');
     if (closeBtn) closeBtn.classList.remove('is-hidden');
   }
 
@@ -299,7 +267,6 @@
     locked = true;
     rotating = false;
     window.cancelAnimationFrame(raf);
-    status.textContent = '';
     if (scare) scare.classList.add('is-live');
     window.setTimeout(function () {
       if (scare) scare.classList.add('is-bloodied');
