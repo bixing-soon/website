@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANON TOKYO</title</title>>
+<meta name="theme-color" content="#1b181f">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #1b181f;
+    --pink: #f7b6d2;
+    --muted: #a790a8;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    background:
+      radial-gradient(50rem 34rem at 50% 20%, rgba(247, 182, 210, 0.14), transparent 70%),
+      var(--bg);
+    color: var(--pink);
+    font-family: "Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(2.2rem, 8vw, 4rem);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 28px rgba(247, 182, 210, 0.35);
+  }
+
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+  }
+
+  a {
+    color: var(--muted);
+    text-underline-offset: 0.2em;
+  }
+
+  a:hover,
+  a:focus-visible {
+    color: var(--pink);
+  }
+
+  /* same exit affordance as the shrine: fixed top-right, circular */
+  .close {
+    position: fixed;
+    top: clamp(0.75rem, 2vw, 1.25rem);
+    right: clamp(0.75rem, 2vw, 1.25rem);
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid rgba(247, 182, 210, 0.55);
+    border-radius: 50%;
+    background: rgba(27, 24, 31, 0.55);
+    color: var(--pink);
+    font: 400 1.4rem/1 system-ui, sans-serif;
+    text-decoration: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .close:hover,
+  .close:focus-visible {
+    color: #ffffff;
+    border-color: var(--pink);
+    background: rgba(247, 182, 210, 0.22);
+  }
+</style>
+</head>
+<body>
+<a class="close" href="/#anon-tokyo" aria-label="Close and return to the last tower">&times;</a>
+
+<main>
+  <h1>ANON TOKYO</h1>
+</h1>  <p>Under construction</p>.</p>
+  <p><a href="/#anon-tokyo">Back to bixing.me</a></p>
+</main>
+</body>
+</html>
