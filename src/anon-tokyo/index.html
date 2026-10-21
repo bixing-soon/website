@@ -3,96 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ANON TOKYO</title</title>>
-<meta name="theme-color" content="#1b181f">
+<title>ANON TOKYO</title>
+<meta name="theme-color" content="#141019">
 <meta name="color-scheme" content="dark">
+<script>
+// Once the access check is passed, this tab skips it (#anon-tokyo-cleared).
+(function () {
+  try {
+    if (window.location.hash === '#anon-tokyo-cleared' ||
+        window.sessionStorage.getItem('anontokyo:cleared') === '1') {
+      document.documentElement.classList.add('is-cleared');
+    }
+  } catch (e) { /* storage can be unavailable */ }
+})();
+</script>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-<style>
-  :root {
-    color-scheme: dark;
-    --bg: #1b181f;
-    --pink: #f7b6d2;
-    --muted: #a790a8;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    min-height: 100svh;
-    display: grid;
-    place-items: center;
-    padding: 2rem;
-    background:
-      radial-gradient(50rem 34rem at 50% 20%, rgba(247, 182, 210, 0.14), transparent 70%),
-      var(--bg);
-    color: var(--pink);
-    font-family: "Noto Sans CJK JP", "Noto Sans", "Quicksand", "Nunito", system-ui, sans-serif;
-    text-align: center;
-  }
-
-  h1 {
-    margin: 0 0 0.6rem;
-    font-size: clamp(2.2rem, 8vw, 4rem);
-    letter-spacing: 0.08em;
-    text-shadow: 0 0 28px rgba(247, 182, 210, 0.35);
-  }
-
-  p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 1.05rem;
-    letter-spacing: 0.04em;
-  }
-
-  a {
-    color: var(--muted);
-    text-underline-offset: 0.2em;
-  }
-
-  a:hover,
-  a:focus-visible {
-    color: var(--pink);
-  }
-
-  /* same exit affordance as the shrine: fixed top-right, circular */
-  .close {
-    position: fixed;
-    top: clamp(0.75rem, 2vw, 1.25rem);
-    right: clamp(0.75rem, 2vw, 1.25rem);
-    z-index: 10;
-    display: grid;
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid rgba(247, 182, 210, 0.55);
-    border-radius: 50%;
-    background: rgba(27, 24, 31, 0.55);
-    color: var(--pink);
-    font: 400 1.4rem/1 system-ui, sans-serif;
-    text-decoration: none;
-    -webkit-user-select: none;
-    user-select: none;
-    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-  }
-
-  .close:hover,
-  .close:focus-visible {
-    color: #ffffff;
-    border-color: var(--pink);
-    background: rgba(247, 182, 210, 0.22);
-  }
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- Reusable pink guitar, drawn once and referenced by the poster. -->
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="guitar-mark">
+      <path fill="#f7b6d2" d="M28.4 3.1h7.2c.9 0 1.6.7 1.6 1.6v6.9c0 .9-.7 1.6-1.6 1.6h-7.2c-.9 0-1.6-.7-1.6-1.6V4.7c0-.9.7-1.6 1.6-1.6Z"/>
+      <path fill="#f7b6d2" d="M29.5 11.5h5v21.3h-5z"/>
+      <path fill="#f7b6d2" d="M32 31.8c-1.9 0-3.4 1.2-3.4 2.7v3.4c-3 .5-5.5 1.8-7.2 3.7-1.6 1.8-2.5 4.1-2.5 6.6 0 2.7 1 5.1 2.7 6.9 2.3 2.4 5.9 3.8 10.4 3.8s8.1-1.4 10.4-3.8c1.7-1.8 2.7-4.2 2.7-6.9 0-2.5-.9-4.8-2.5-6.6-1.7-1.9-4.2-3.2-7.2-3.7v-3.4c0-1.5-1.5-2.7-3.4-2.7Z"/>
+      <g fill="none" stroke="#5a2a44" stroke-width="0.9" stroke-linecap="round">
+        <path d="M30.8 5.2v46.3M32 5.2v46.3M33.2 5.2v46.3"/>
+        <path d="M29.5 15h5M29.5 18.5h5M29.5 22h5M29.5 25.5h5M29.5 29h5M29.5 32.5h5"/>
+      </g>
+      <circle fill="#5a2a44" cx="32" cy="45" r="3"/>
+      <rect fill="#5a2a44" x="27.8" y="51" width="8.4" height="1.7" rx="0.8"/>
+      <circle fill="#f7b6d2" cx="26.7" cy="6.1" r="1.15"/>
+      <circle fill="#f7b6d2" cx="26.7" cy="9.2" r="1.15"/>
+      <circle fill="#f7b6d2" cx="37.3" cy="6.1" r="1.15"/>
+      <circle fill="#f7b6d2" cx="37.3" cy="9.2" r="1.15"/>
+    </g>
+  </defs>
+</svg>
+
 <a class="close" href="/#anon-tokyo" aria-label="Close and return to the last tower">&times;</a>
 
+<header class="minibar" aria-hidden="true">
+  <div class="mini-brand" id="miniBrand">
+    <span class="line">Anon</span>
+    <span class="line">Tokyo</span>
+  </div>
+</header>
+
 <main>
-  <h1>ANON TOKYO</h1>
-</h1>  <p>Under construction</p>.</p>
-  <p><a href="/#anon-tokyo">Back to bixing.me</a></p>
+  <!-- 1. the poster -->
+  <section class="screen poster is-active" id="poster" aria-label="ANON TOKYO">
+    <svg class="poster-guitar" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <use href="#guitar-mark"></use>
+    </svg>
+    <div class="poster-wordmark" id="posterWordmark">
+      <span class="line">Anon</span>
+      <span class="line">Tokyo</span>
+    </div>
+    <noscript>
+      <p class="noscript">This experience needs JavaScript. <a href="/#anon-tokyo">Return to the towers</a>.</p>
+    </noscript>
+  </section>
+
+  <!-- 2. access check -->
+  <section class="screen quiz" id="quiz" hidden aria-labelledby="quizPrompt">
+    <div class="quiz-inner">
+      <p class="quiz-prompt" id="quizPrompt">Before we continue, some questions:</p>
+
+      <div class="quiz-card" id="quizCard" hidden>
+        <div class="quiz-meta">
+          <span id="qCount">Question 1 / 5</span>
+          <span>ANON TOKYO // ACCESS</span>
+        </div>
+        <div class="quiz-progress" aria-hidden="true"><span id="quizBar"></span></div>
+        <h2 class="q-text" id="qText"></h2>
+        <div class="options" id="options"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. wrong answer -->
+  <section class="screen fail" id="fail" hidden aria-live="assertive">
+    <p class="fail-line fail-error" id="failError">SYSTEM ERROR</p>
+    <p class="fail-line fail-denied" id="failDenied" hidden>YOU ARE NOT AUTHORIZED TO ACCESS</p>
+  </section>
+
+  <!-- 4. welcome -->
+  <section class="screen welcome" id="welcome" hidden aria-labelledby="welcomeTitle">
+    <h1 class="welcome-title" id="welcomeTitle">
+      <span>Welcome to</span>
+      <span class="tape"><span class="tape-ink">Anon Tokyo!</span></span>
+    </h1>
+    <p class="welcome-sub">Five answers accepted. The door is open.</p>
+    <button class="btn-primary" id="enterGame" type="button">Step inside</button>
+  </section>
+
+  <!-- 5. still being built -->
+  <section class="screen construction" id="construction" hidden aria-labelledby="constructionTitle">
+    <h1 class="construction-title" id="constructionTitle">Under construction.</h1>
+    <p class="construction-sub">ANON TOKYO is still being built. Check back soon.</p>
+  </section>
 </main>
+
+<script src="game.js"></script>
 </body>
 </html>
